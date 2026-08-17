@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Morph chain filmstrip</title>
+<style>
+body{margin:0;background:#fff;font:12px/1.4 -apple-system,Helvetica,Arial;color:#05070a}
+h3{font:600 11px/1 -apple-system;letter-spacing:.14em;text-transform:uppercase;margin:14px 0 6px;color:#79838f}
+canvas.out{display:block;border:1px solid #e2e7ee;max-width:100%;height:auto}
+#err{color:#c00;white-space:pre-wrap;padding:10px}
+</style></head><body>
+<div id="err"></div><div id="host"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* Renders the site's actual ribbon shader across the whole scroll morph chain
+   as a filmstrip. Reads the shader out of the page source so it can never
+   drift from what ships. ?src=index.html|baseline.html */
+(async function(){
+const err=document.getElementById('err');
+try{
+const src=new URLSearchParams(location.search).get('src')||'index.html';
+const txt=await (await fetch(src,{cache:'no-store'})).text();
+
+function lit(startMark,endMark){
+  const i=txt.indexOf(startMark); if(i<0) throw new Error('missing '+startMark);
+  const j=txt.indexOf(endMark,i);  if(j<0) throw new Error('missing end for '+startMark);
+  return txt.slice(i+startMark.length,j+1);
+}
+const shapesLit=lit('var SHAPES=[',"].join('\\n');");
+const vsLit    =lit('vertexShader:[',"].join('\\n'),");
+const fsLit    =lit('fragmentShader:[',"].join('\\n')");
+
+/* eslint-disable no-eval */
+const SHAPES=eval('['+shapesLit).join('\n');
+const VS=eval('['+vsLit).join('\n');
+const FS=eval('['+fsLit).join('\n');
+
+const legacy=/uSegZ/.test(VS);
+/* chain + per-link character, matching each version's own JS */
+const CHAIN=legacy
+  ? [{a:1,b:5,z:0},{a:5,b:3,z:1},{a:3,b:4,z:0}]
+  : [{a:1,b:5,stag:0.62,sweep:0},{a:5,b:3,stag:0.55,sweep:1},{a:3,b:4,stag:0.45,sweep:0}];
+const NAMES=['problem → introducing phluidity','introducing phluidity → before / after','before / after → leadership'];
+
+const LINES=52,SEG=190;
+const vCount=LINES*(SEG+1)*2;
+const pos=new Float32Array(vCount*3),aLine=new Float32Array(vCount),aT=new Float32Array(vCount),aSide=new Float32Array(vCount);
+const idx=[];let v=0;
+for(let l=0;l<LINES;l++){
+  const lf=l/(LINES-1), base=l*(SEG+1)*2;
+  for(let s=0;s<=SEG;s++){const t=s/SEG;
+    aLine[v]=lf;aT[v]=t;aSide[v]=-1;v++; aLine[v]=lf;aT[v]=t;aSide[v]=1;v++;}
+  for(let s=0;s<SEG;s++){const a=base+s*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}
+}
+const geo=new THREE.BufferGeometry();
+geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+geo.setAttribute('aLine',new THREE.BufferAttribute(aLine,1));
+geo.setAttribute('aT',new THREE.BufferAttribute(aT,1));
+geo.setAttribute('aSide',new THREE.BufferAttribute(aSide,1));
+geo.setIndex(idx);
+geo.boundingSphere=new THREE.Sphere(new THREE.Vector3(),40);
+
+const U={uTime:{value:0},uTravel:{value:0},uNarrow:{value:0},uMorph:{value:1},uMix:{value:0},
+  uA:{value:1},uB:{value:5},uW:{value:new THREE.Vector2(4,2.5)},uWidth:{value:0.0092},
+  uAlpha:{value:1},uSSX:{value:0.405},uSOX:{value:-0.445},uSSY:{value:1},uSOY:{value:0},uVert:{value:0},
+  uSegZ:{value:0},uStag:{value:0.5},uSweep:{value:0},uPointer:{value:0},uWK:{value:1},uRip:{value:1},uStream:{value:1},
+  uMouse:{value:new THREE.Vector2(0,0)}};
+/* per-shape stroke weight and ripple, read from the page so they cannot drift */
+const arr=(n,d)=>{const m=txt.match(new RegExp('var '+n+' *=(\\[[^\\]]*\\])'));return m?JSON.parse(m[1]):d;};
+const SW=arr('SHAPE_W',[1,1,1,1,1,1]), SR=arr('SHAPE_RIP',[1,1,1,1,1,1]), SD=arr('SHAPE_STREAM',[1,1,1,1,1,1]);
+const mat=new THREE.ShaderMaterial({uniforms:U,transparent:true,depthTest:false,depthWrite:false,
+  side:THREE.DoubleSide,vertexShader:VS,fragmentShader:FS});
+
+const TW=210,TH=118,COLSN=9;
+const r=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
+r.setPixelRatio(2); r.setSize(TW,TH,false); r.setClearColor(0xffffff,1);
+const cam=new THREE.PerspectiveCamera(46,1280/720,0.1,60); cam.position.set(0,0,3);
+const vH=2*Math.tan(cam.fov*Math.PI/360)*cam.position.z;
+U.uW.value.set(vH*cam.aspect,vH);
+const scene=new THREE.Scene(); scene.add(new THREE.Mesh(geo,mat));
+
+const host=document.getElementById('host');
+
+/* ?rest=3 renders one shape id alone, full size — the deterministic rest state,
+   with no scroll smoothing to wait on */
+/* ?a=5&b=3&mix=0.65 renders one transition frame full size, for inspecting what
+   a small filmstrip tile cannot show */
+const qa=new URLSearchParams(location.search);
+if(qa.get('a')!==null&&qa.get('b')!==null){
+  const A=+qa.get('a'), B=+qa.get('b'), MIX=+(qa.get('mix')||0.5);
+  const link=CHAIN.find(l=>l.a===A&&l.b===B)||{stag:0.5,sweep:0};
+  const W=1280,H=720; r.setSize(W,H,false);
+  U.uA.value=A; U.uB.value=B; U.uMix.value=MIX;
+  U.uStag.value=link.stag; U.uSweep.value=link.sweep; U.uSegZ.value=0;
+  const fw=MIX*MIX*(3-2*MIX);
+  U.uWK.value=SW[A]+(SW[B]-SW[A])*fw;
+  U.uRip.value=SR[A]+(SR[B]-SR[A])*fw;
+  U.uStream.value=SD[A]+(SD[B]-SD[A])*fw;
+  U.uTime.value=+(qa.get('t')||0);
+  r.render(scene,cam);
+  const out=document.createElement('canvas');
+  out.className='out'; out.width=W; out.height=H; host.appendChild(out);
+  out.getContext('2d').drawImage(r.domElement,0,0,W,H);
+  const lab=document.createElement('pre'); lab.textContent='shape '+A+' -> '+B+'   mix '+MIX;
+  host.appendChild(lab);
+  return;
+}
+const restId=new URLSearchParams(location.search).get('rest');
+if(restId!==null){
+  /* ?times=0,6,12 additionally samples the same rest shape across the clock and
+     reports how far any pixel actually travelled, which is the only honest way
+     to judge "subtle" for motion a still frame cannot show */
+  const times=(new URLSearchParams(location.search).get('times')||'').split(',').filter(x=>x!=='').map(Number);
+  const W=1280,H=720;
+  r.setSize(W,H,false);
+  U.uA.value=U.uB.value=+restId; U.uMix.value=0; U.uStag.value=0.5; U.uSweep.value=0;
+  U.uSegZ.value=0; U.uWK.value=SW[+restId]; U.uRip.value=SR[+restId]; U.uStream.value=SD[+restId];
+  if(!times.length){
+    const out=document.createElement('canvas');
+    out.className='out'; out.width=W; out.height=H; host.appendChild(out);
+    U.uTime.value=0; r.render(scene,cam);
+    out.getContext('2d').drawImage(r.domElement,0,0,W,H);
+    return;
+  }
+  const shots=[];
+  const cap=document.createElement('canvas'); cap.width=W; cap.height=H;
+  const cc=cap.getContext('2d',{willReadFrequently:true});
+  times.forEach(tv=>{
+    U.uTime.value=tv; r.render(scene,cam);
+    cc.clearRect(0,0,W,H); cc.drawImage(r.domElement,0,0,W,H);
+    shots.push(cc.getImageData(0,0,W,H));
+  });
+  /* per column, find the vertical centre of ink; the spread of that centre
+     across the time samples is the excursion in device pixels */
+  function centres(img){
+    const out=[];
+    for(let x=0;x<W;x+=8){
+      let sum=0,wsum=0;
+      for(let y=0;y<H;y++){
+        const i=(y*W+x)*4, ink=255-img.data[i];
+        if(ink>12){ sum+=y*ink; wsum+=ink; }
+      }
+      out.push(wsum>0?sum/wsum:null);
+    }
+    return out;
+  }
+  /* The centroid moves whenever brightness redistributes, even with frozen
+     geometry, so it cannot answer "does the outline stay put". The envelope can:
+     the first and last inked row in a column are the band's edges, and if those
+     hold still the shape is not breathing however much the ink inside it moves. */
+  function envelope(img){
+    const top=[],bot=[];
+    for(let x=0;x<W;x+=8){
+      /* cumulative-ink percentiles, not first/last pixel over a threshold: on a
+         shape made of separate lines the hard threshold makes the edge jump a
+         whole band whenever one line dips, which reads as hundreds of pixels of
+         movement that is not there */
+      const col=[]; let total=0;
+      for(let y=0;y<H;y++){ const ink=255-img.data[(y*W+x)*4]; col.push(ink); total+=ink; }
+      if(total<400){ top.push(null); bot.push(null); continue; }
+      let acc=0,lo=null,hi=null;
+      for(let y=0;y<H;y++){
+        acc+=col[y];
+        if(lo===null&&acc>=total*0.05) lo=y;
+        if(hi===null&&acc>=total*0.95){ hi=y; break; }
+      }
+      top.push(lo); bot.push(hi);
+    }
+    return {top,bot};
+  }
+  const envs=shots.map(envelope);
+  let envPeak=0,envTot=0,envN=0;
+  for(let i=0;i<envs[0].top.length;i++){
+    for(const key of ['top','bot']){
+      const vals=envs.map(e=>e[key][i]);
+      if(vals.some(v=>v===null)) continue;
+      const d=Math.max(...vals)-Math.min(...vals);
+      envPeak=Math.max(envPeak,d); envTot+=d; envN++;
+    }
+  }
+  const cs=shots.map(centres);
+  let peak=0,n=0,tot=0;
+  for(let i=0;i<cs[0].length;i++){
+    const vals=cs.map(c=>c[i]).filter(v=>v!==null);
+    if(vals.length<cs.length) continue;
+    const d=Math.max(...vals)-Math.min(...vals);
+    peak=Math.max(peak,d); tot+=d; n++;
+  }
+  /* Vertical excursion says how big the motion is; it cannot say which way it
+     goes. Cross-correlate the first and last crest profiles and find the column
+     lag that best re-aligns them: that lag IS the horizontal travel, and its
+     sign is the direction of flow. */
+  function flowLag(a,b){
+    const STEP=8, MAXL=60;
+    /* the band covers only part of the frame, so demand overlap against the
+       inked columns rather than the full width, or every lag is rejected */
+    const inked=a.reduce((n,v)=>n+(v===null?0:1),0);
+    let best=0,bestScore=-Infinity;
+    for(let lag=-MAXL;lag<=MAXL;lag++){
+      let s=0,m=0,va=0,vb=0;
+      for(let i=0;i<a.length;i++){
+        const j=i+lag; if(j<0||j>=b.length) continue;
+        if(a[i]===null||b[j]===null) continue;
+        s+=a[i]*b[j]; va+=a[i]*a[i]; vb+=b[j]*b[j]; m++;
+      }
+      if(m<inked*0.6||va===0||vb===0) continue;
+      const score=s/Math.sqrt(va*vb);
+      if(score>bestScore){bestScore=score;best=lag;}
+    }
+    return best*STEP;
+  }
+  /* The shape's own geometry dwarfs the drift and is identical in every frame,
+     so correlating raw profiles just re-finds zero lag. Subtract each column's
+     mean ACROSS TIME to leave only the part that actually moves, then correlate
+     those residuals. */
+  function residuals(){
+    const out=cs.map(c=>c.slice());
+    for(let i=0;i<cs[0].length;i++){
+      const vals=cs.map(c=>c[i]);
+      if(vals.some(v=>v===null)){ out.forEach(o=>o[i]=null); continue; }
+      const mu=vals.reduce((p,q)=>p+q,0)/vals.length;
+      out.forEach((o,k)=>o[i]=cs[k][i]-mu);
+    }
+    return out;
+  }
+  const rs=residuals();
+  const span=times[times.length-1]-times[0];
+  /* The streaming modulates INK, not position, so the centroid no longer tracks
+     it. Total ink per column does: the travelling bright and dim bands show up
+     directly there, and correlating that residual gives the real direction. */
+  function inkProfile(img){
+    const out=[];
+    for(let x=0;x<W;x+=8){
+      let tot=0;
+      for(let y=0;y<H;y++) tot+=255-img.data[(y*W+x)*4];
+      out.push(tot>400?tot:null);
+    }
+    return out;
+  }
+  const ips=shots.map(inkProfile);
+  const ipr=ips.map(a=>a.slice());
+  for(let i=0;i<ips[0].length;i++){
+    const vals=ips.map(c=>c[i]);
+    if(vals.some(v=>v===null)){ ipr.forEach(o=>o[i]=null); continue; }
+    const mu=vals.reduce((p,q)=>p+q,0)/vals.length;
+    ipr.forEach((o,k)=>o[i]=ips[k][i]-mu);
+  }
+  const lagPx=flowLag(ipr[0],ipr[ipr.length-1]);
+  const dir=lagPx>0?'downstream (left to right)':lagPx<0?'upstream (right to left)':'none detected';
+  const strip=document.createElement('canvas');
+  strip.className='out'; strip.width=W; strip.height=H; host.appendChild(strip);
+  strip.getContext('2d').drawImage(r.domElement,0,0,W,H);
+  const p=document.createElement('pre');
+  p.id='readout';
+  p.textContent='shape '+restId+'  uStream '+SD[+restId]+'  times ['+times.join(', ')+'] s\n'+
+    'ink centroid moves: peak '+peak.toFixed(2)+' px, mean '+(tot/Math.max(1,n)).toFixed(2)+' px\n'+
+    'OUTLINE moves:      peak '+envPeak.toFixed(2)+' px, mean '+(envTot/Math.max(1,envN)).toFixed(2)+' px   <- breathing lives here\n'+
+    'ink streams: '+lagPx+' px over '+span+' s  ('+(lagPx/span).toFixed(1)+' px/s, '+dir+')';
+  host.appendChild(p);
+  return;
+}
+CHAIN.forEach((link,si)=>{
+  const h=document.createElement('h3');
+  h.textContent=(si+1)+' — '+NAMES[si]; host.appendChild(h);
+  const out=document.createElement('canvas');
+  out.className='out'; out.width=TW*COLSN; out.height=TH+16; host.appendChild(out);
+  const c=out.getContext('2d');
+  c.fillStyle='#fff'; c.fillRect(0,0,out.width,out.height);
+  for(let i=0;i<COLSN;i++){
+    const f=i/(COLSN-1);
+    U.uA.value=link.a; U.uB.value=link.b; U.uMix.value=f;
+    if(legacy) U.uSegZ.value=link.z; else {U.uStag.value=link.stag;U.uSweep.value=link.sweep;}
+    const fw=f*f*(3-2*f);
+    U.uWK.value =SW[link.a]+(SW[link.b]-SW[link.a])*fw;
+    U.uRip.value=SR[link.a]+(SR[link.b]-SR[link.a])*fw;
+    U.uStream.value=SD[link.a]+(SD[link.b]-SD[link.a])*fw;
+    r.render(scene,cam);
+    c.drawImage(r.domElement,i*TW,0,TW,TH);
+    c.strokeStyle='#e2e7ee'; c.beginPath(); c.moveTo(i*TW+.5,0); c.lineTo(i*TW+.5,TH); c.stroke();
+    c.fillStyle='#79838f'; c.font='10px -apple-system'; c.fillText(f.toFixed(2),i*TW+6,TH+12);
+  }
+});
+}catch(e){err.textContent=e.stack||String(e);}
+})();
+</script></body></html>
