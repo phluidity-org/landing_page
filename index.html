@@ -20,15 +20,20 @@
     --rule:#e2e7ee;
     --rule-2:#cfd7e2;
     --col:600px;
-    
+    /* A stencil, not a colour. Mask gradients are read for their alpha alone,
+       so this never paints and is deliberately not part of the palette; it is
+       named only so it stops reading as a stray literal wherever it appears. */
     --mask-on:#000;
 
-    
+    /* Type roles by purpose, not by value. Two families of uppercase label:
+       BRAND labels carry the wordmark's wide signature tracking at any size,
+       and FUNCTIONAL labels ride a ramp where tracking opens as size drops,
+       which is what keeps 9px legible without shouting at 11px. */
     --tk-brand:.30em;
     --fs-lab-1:11px;   --tk-lab-1:.18em;
     --fs-lab-2:10px;   --tk-lab-2:.22em;
     --fs-lab-3:9px;    --tk-lab-3:.26em;
-    
+    /* the problem and leadership headings do the same job at the same weight */
     --fs-h-section:clamp(27px,3.35vw,47px);
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -58,11 +63,52 @@
   main{position:relative;z-index:3}
 
   /* ---------- nav ---------- */
- 
+  /* The bar carries no surface of its own. Everything behind it is handled by
+     .topfade below, so the nav is only its type. */
   nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;
     justify-content:space-between;padding:0 clamp(20px,4vw,52px);height:70px}
 
-  
+  /* ---------- the top fade ---------- */
+  /* Content does not disappear under a lid, it dissolves on the way out. There
+     is no bar and no hairline: the band simply gets blurrier and whiter the
+     closer to the top edge you read, so a line of type going up loses focus
+     before it loses itself.
+
+     A single blurred layer cannot do this. backdrop-filter takes one radius,
+     so masking it only fades a CONSTANT blur in and out and the boundary is
+     still there, just softer. So there are five layers, each blurring what is
+     already behind it, INCLUDING the layer before it. Their radii climb 0.5,
+     1.2, 3, 6.5, 14, and each is masked to sit closer to the top than the last,
+     so the radii compound where they overlap and the total runs smoothly from
+     nothing at the foot of the band to about 25px at the very top. Compounding
+     is the whole trick; five separately masked blurs would just be five edges.
+
+     The band is 190px, and the height is the part that was wrong at first. At
+     132px the whole ramp had to happen inside a single line of display type:
+     the first line of a hero came out heavily smeared while the second was
+     already perfectly sharp, which reads as a smudged duplicate sitting over
+     the nav rather than as a line dissolving. A ramp needs to be longer than
+     the thing travelling through it. Each layer now feathers over roughly 40%
+     of the band, about 76px, instead of dropping out inside 34px.
+
+     The veil rides on top and is weighted to hold the nav's own type: it stays
+     near opaque across the 70px the bar occupies and only then falls away, and
+     it now falls away over the remaining 120px rather than 60. Peak blur is
+     reached only in the top handful of pixels, where the veil is at .96 and
+     there is almost nothing left to smear. */
+  /* Both bands are TRANSIT effects and are carried on movement alone. The point
+     of the dissolve is to soften what is leaving the frame; once the page has
+     come to rest nothing is leaving, and all the band does then is sit on the
+     parked section's own eyebrow and blur it. Sections settle with their first
+     line about 90px down, which is inside a 190px band however the band is
+     shaped, so no amount of tuning the ramp fixes this. It is not a ramp
+     problem, it is a question of when the effect should exist at all.
+
+     So they fade in on scroll and back out once the page settles, and what
+     stays behind is .navveil below: a short veil, no taller than the bar
+     itself, whose only job is to keep the wordmark legible where the water
+     runs under it. Faster in than out, because arriving late reads as lag
+     while leaving slowly reads as a settle. */
   .topfade,.botfade{opacity:0;transition:opacity .45s ease}
   body.moving .topfade,body.moving .botfade{opacity:1;transition:opacity .16s ease}
   .topfade{position:fixed;top:0;left:0;right:0;height:190px;z-index:19;pointer-events:none}
@@ -97,7 +143,18 @@
       rgba(255,255,255,.96) 0%,rgba(255,255,255,.93) 18%,rgba(255,255,255,.80) 34%,
       rgba(255,255,255,.56) 52%,rgba(255,255,255,.28) 72%,rgba(255,255,255,.09) 87%,
       rgba(255,255,255,0) 100%)}
- 
+  /* The same idea at the foot of the screen, deliberately smaller. Content
+     arrives from below as well as leaving above, and a hard bottom edge gives
+     the page away as a window; softening it lets the column read as continuing
+     past the frame rather than stopping at it.
+
+     It is about half the depth of the top band and a quarter of its blur, three
+     layers peaking near 7px against 25px. It has to stay the lesser of the two:
+     the top band is doing a job, holding the navigation off what passes under
+     it, while this one is only easing an edge, and matching them would leave
+     the page looking pinched between two equal fogs. The veil is lighter for
+     the same reason, since there is no type sitting on it. The Next control and
+     the section guide are at z-21 and stay perfectly sharp above it. */
   .botfade{position:fixed;bottom:0;left:0;right:0;height:104px;z-index:19;pointer-events:none}
   .botfade i:nth-child(1){backdrop-filter:blur(0.5px);-webkit-backdrop-filter:blur(0.5px);
     -webkit-mask-image:linear-gradient(to top,var(--mask-on) 0%,var(--mask-on) 58%,transparent 100%);
@@ -112,7 +169,9 @@
     background:linear-gradient(to top,
       rgba(255,255,255,.84) 0%,rgba(255,255,255,.60) 28%,rgba(255,255,255,.32) 54%,
       rgba(255,255,255,.11) 78%,rgba(255,255,255,0) 100%)}
-  
+  /* a shorter band and three layers on small screens, where this sits over the
+     same WebGL field on far less GPU. The type is smaller there too, so the
+     ramp still outruns a line of it. */
   @media(max-width:900px){
     .topfade{height:128px}
     .botfade{height:76px}
@@ -125,7 +184,7 @@
       -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%);
               mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%)}
   }
-  
+  /* a reader who has asked for less transparency gets the veil and no blur */
   @media(prefers-reduced-transparency:reduce){
     .topfade i,.botfade i,.navveil i{display:none}
     .topfade::after{background:linear-gradient(to bottom,
@@ -133,7 +192,7 @@
     .botfade::after{background:linear-gradient(to top,
       var(--white) 0%,rgba(255,255,255,0) 100%)}
   }
-  
+  /* no backdrop-filter: the veil alone still carries the fade */
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .topfade i,.botfade i,.navveil i{display:none}
   }
@@ -176,6 +235,7 @@
   #problem h2 em{font-style:normal;color:var(--blue)}
   .body{font-size:clamp(15px,1.15vw,17px);line-height:1.72;color:var(--ink-2);margin-top:24px;max-width:68ch}
   .body + .body{margin-top:18px}
+  .body b{color:var(--ink);font-weight:500}
   .stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:48px;
     border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
   .stat{padding:22px 20px 24px 0}
@@ -192,6 +252,19 @@
   #intro{min-height:95svh;padding-top:10svh;padding-bottom:10svh}
   #intro h2{font-size:clamp(29px,3.8vw,54px)}
   #intro h2 em{font-style:normal;color:var(--blue)}
+  /* The capability register. Same hairline vocabulary as the ledger and
+     deliberately not the same shape: one column of capabilities against the
+     mechanism each one rests on, opened by a 2px rule, closed row by row. No
+     fills, no boxes, no second accent. */
+  .register{margin-top:34px;border-top:2px solid var(--ink);max-width:68ch}
+  .rlab{padding:6px 0 7px;border-bottom:1px solid var(--rule);
+    font-size:var(--fs-lab-3);letter-spacing:var(--tk-lab-3);text-transform:uppercase;
+    font-weight:600;color:var(--ink-3)}
+  .reg{display:grid;grid-template-columns:1fr 1.5fr;gap:22px;padding:11px 0;
+    border-bottom:1px solid var(--rule);align-items:baseline}
+  .reg .k{color:var(--ink);font-size:clamp(13px,1vw,15px);font-weight:500;letter-spacing:-.01em}
+  .reg .v{color:var(--ink-3);font-size:clamp(11.5px,.84vw,12.5px);line-height:1.4}
+  @media(max-width:640px){.reg{grid-template-columns:1fr;gap:5px}}
 
   /* ---------- solution ---------- */
   #solution{min-height:100svh;padding-top:8svh;padding-bottom:4svh}
@@ -204,7 +277,8 @@
   .lhead span:last-child{color:var(--blue)}
   .row{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;padding:6.5px 0;
     border-bottom:1px solid var(--rule);align-items:baseline}
-  
+  /* the entrance state is only armed once scripting is confirmed, so a failed
+     or blocked script can never leave the page invisible */
   .js .row{opacity:0;transform:translateY(12px);
     transition:opacity .62s cubic-bezier(.16,1,.3,1),transform .62s cubic-bezier(.16,1,.3,1)}
   .js .row.in{opacity:1;transform:none}
@@ -218,7 +292,8 @@
   /* ---------- leadership ---------- */
   #leadership{min-height:95svh;padding-top:10svh;padding-bottom:10svh}
   #leadership h2{font-size:var(--fs-h-section)}
- 
+  /* 48ch is a much shorter line than .body's 63ch, so it needs less leading,
+     not the same amount */
   .lsub{color:var(--ink-2);font-size:clamp(15px,1.15vw,17px);line-height:1.6;margin-top:22px;max-width:48ch}
   .team{margin-top:48px;border-top:2px solid var(--ink)}
   .person{position:relative;display:grid;grid-template-columns:1fr auto;gap:0 16px;align-items:baseline;
@@ -228,13 +303,25 @@
   .person>p{font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);text-transform:uppercase;color:var(--blue);
     font-weight:600;text-align:right}
 
-  
+  /* The bio appears on hover and on focus, and nothing here is clickable: no
+     button, no pointer cursor, no state to toggle. The name still takes focus
+     so a keyboard (and a tap, which focuses) can reach the bio, and the
+     ::before stretches that hover target across the whole row. */
   .ptoggle{font:inherit;letter-spacing:inherit;color:inherit;
     text-align:left;cursor:default}
   .ptoggle::before{content:'';position:absolute;inset:0}
   .ptoggle:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
 
-  
+  /* The bio floats rather than expanding the row, so hovering the list never
+     moves the names under the pointer. Same material the nav uses to sit over
+     the water: translucent white, a backdrop blur and a hairline. No shadow,
+     no radius. */
+  /* Keyboard focus reveals the bio; a mouse click must not. A click on a
+     focusable name leaves it focused, and :focus-within would then hold the
+     bio open after the pointer had moved away, which reads as a click target
+     the name is not. :focus-visible is exactly the distinction the browser
+     already draws, and the :has() sits inside :is() so the whole selector
+     list still parses where :has() is unsupported. */
   .team{position:relative}
   .person:hover,.person:is(:has(.ptoggle:focus-visible)){z-index:5}
   .pbio{position:absolute;z-index:5;left:0;right:0;top:calc(100% - 5px);
@@ -246,20 +333,22 @@
   .pbio>div{display:flex;gap:18px;align-items:flex-start}
   .pface{width:84px;height:84px;flex:none;border-radius:50%;object-fit:cover;
     filter:grayscale(1) contrast(1.03)}
-  
+  /* portrait pending: initials in the label voice, not a broken image */
   .pface-soon{display:flex;align-items:center;justify-content:center;
     border:1px solid var(--rule-2);color:var(--ink-3);
     font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);font-weight:600}
   .ptext{font-size:13px;line-height:1.62;color:var(--ink-2)}
   .person:hover .pbio,.person:is(:has(.ptoggle:focus-visible)) .pbio{
     opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s,0s,0s}
-  
+  /* Touch has no real hover and gives no :focus-visible, so there plain focus
+     is the reveal: a tap opens one bio, a tap anywhere else takes it away. */
   @media(hover:none){
     .person:focus-within{z-index:5}
     .person:focus-within .pbio{
       opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s,0s,0s}
   }
-  
+  /* Wide enough to clear the reading column: the tooltip moves out over the
+     water, where there is nothing to cover, and stacks portrait over bio. */
   @media(min-width:1120px){
     .pbio{left:auto;right:100%;top:50%;bottom:auto;width:326px;margin-right:26px;
       transform:translateY(-50%) translateX(-6px)}
@@ -268,7 +357,8 @@
     .pbio>div{flex-direction:column;gap:14px}
     .pface{width:96px;height:96px}
   }
-  
+  /* a large tablet gets the side layout and the touch reveal at once, so it
+     needs the vertical centering the hover rule above would have given it */
   @media(min-width:1120px) and (hover:none){
     .person:focus-within .pbio{transform:translateY(-50%)}
   }
@@ -283,14 +373,28 @@
   .soon{align-self:flex-start;margin-top:16px;font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);
     text-transform:uppercase;font-weight:600;color:var(--blue);border:1px solid var(--blue);
     border-radius:20px;padding:6px 14px}
-  .mail{align-self:flex-start;margin-top:30px;font-size:clamp(20px,2.5vw,36px);
+  .mail{align-self:flex-start;margin-top:30px;font-size:clamp(18px,2.1vw,30px);max-width:100%;
     letter-spacing:-.025em;color:var(--blue);text-decoration:none;font-weight:400;
     border-bottom:2px solid var(--blue);padding-bottom:5px;transition:.35s}
   .mail:hover{color:#0630d6;border-bottom-color:#0630d6}
+  /* The contact route is now a control rather than an address: the same square
+     Settlement Blue fill and uppercase functional label as the nav CTA, one
+     step larger because it is the page's terminal action. */
+  .libtn{align-self:flex-start;margin-top:30px;display:inline-flex;align-items:center;gap:14px;
+    background:var(--blue);color:#fff;text-decoration:none;padding:16px 22px;
+    font-size:var(--fs-lab-1);letter-spacing:var(--tk-lab-1);text-transform:uppercase;font-weight:500;
+    transition:background .3s}
+  .libtn:hover{background:#0630d6}
+  .libtn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  .libtn svg{width:13px;height:13px;display:block;flex:none;
+    transition:transform .35s cubic-bezier(.16,1,.3,1)}
+  .libtn:hover svg{transform:translate(2px,-2px)}
   .note{margin-top:34px;color:var(--ink-3);font-size:12.5px;line-height:1.6;max-width:44ch}
   footer{margin-top:12svh;border-top:1px solid var(--rule);padding:20px 0;display:flex;
     justify-content:space-between;gap:14px;flex-wrap:wrap;
     font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);text-transform:uppercase;color:var(--ink-3);font-weight:500}
+  footer a{color:var(--ink-3);text-decoration:none;transition:color .3s}
+  footer a:hover{color:var(--blue)}
 
   .next{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:21;
     width:36px;height:36px;border:1px solid var(--rule-2);border-radius:50%;
@@ -306,7 +410,12 @@
 
   .guide{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:21;
     display:flex;flex-direction:column;gap:10px;align-items:center}
- 
+  /* The active marker extends by growing past its own box rather than by
+     scaling. scaleY stretches the corner radius with everything else, so a
+     6px circle at 3.3x became a 20px ellipse: pointed, and too long for the
+     column. Growing the absolutely positioned ::before keeps the radius at a
+     true 3px, so the marker is a capsule with the same round ends as the dots
+     it sits among. It is still out of flow, so its neighbours do not move. */
   .guide a{width:6px;height:6px;display:block;position:relative}
   .guide a::before{content:'';position:absolute;inset:0;border-radius:3px;
     background:var(--rule-2);
@@ -346,6 +455,10 @@
     .stat b{font-size:19px}
     .stat span{font-size:8.5px;margin-top:6px;line-height:1.45}
     #intro h2{font-size:24px}
+    .register{margin-top:16px}
+    .reg{padding:8px 0;gap:10px}
+    .reg .k{font-size:12px}
+    .reg .v{font-size:10.5px}
     #solution h2{font-size:21px}
     .sub{font-size:12.5px;margin-top:10px}
     .ledger{margin-top:14px}
@@ -361,7 +474,7 @@
     .person h3{font-size:15px}
     .person>p{text-align:right}
     #contact h2{font-size:28px}
-    .mail{font-size:19px;margin-top:18px}
+    .libtn{margin-top:20px;padding:14px 18px}
     .note{font-size:11.5px;margin-top:18px}
     footer{margin-top:6svh}
     .next{bottom:12px;width:32px;height:32px}
@@ -449,11 +562,26 @@
   <section id="intro"><div class="bank"><div class="col">
     <div class="eyebrow rv">Introducing Phluidity</div>
     <h2 class="rv">Phluidity: The Marketplace<br>for <em>Private Companies</em>.</h2>
-    <p class="body rv">Liquidity is the oxygen of markets. Without it, trades are infrequent, spreads are
-      wide, and prices stay opaque. Phluidity uses tokenization to unblock the flow of private
-      transactions, cutting costs, improving trust, and ultimately raising valuations.</p>
-    <p class="body rv">One venue to issue, sell, buy, borrow, and lend, with verified counterparties
-      and immutable ownership provenance.</p>
+    <p class="body rv">Phluidity's <b>blockchain-powered financial infrastructure</b> is designed to increase
+      liquidity for private companies and their shareholders. Our platform facilitates share issuance,
+      process management support, and enhanced information and equity ownership verification.</p>
+    <p class="body rv">These capabilities support secondary trades, equity-backed loans, and AI-powered
+      reporting through cryptographically secure on-chain infrastructure. Through tokenization, we make
+      cap table management and share transfers seamless while <b>providing control to the companies we
+      serve</b>.</p>
+    <div class="register rv">
+      <div class="rlab">What the infrastructure supports</div>
+      <div class="reg"><div class="k">Issuance &amp; cap table</div>
+        <div class="v">Tokenized share issuance with seamless transfers and process support</div></div>
+      <div class="reg"><div class="k">Ownership verification</div>
+        <div class="v">Enhanced information and equity ownership verified on-chain</div></div>
+      <div class="reg"><div class="k">Secondaries</div>
+        <div class="v">Secondary trades that settle atomically, with ROFR programmed in</div></div>
+      <div class="reg"><div class="k">Lending</div>
+        <div class="v">Equity-backed loans against private positions</div></div>
+      <div class="reg"><div class="k">AI-powered reporting</div>
+        <div class="v">Reporting generated from cryptographically secure records</div></div>
+    </div>
   </div></div></section>
 
   <section id="solution"><div class="bank"><div class="col">
@@ -464,11 +592,12 @@
     <div class="ledger">
       <div class="lhead"><span>Today</span><span>With Phluidity</span></div>
       <div class="row"><div class="a">No centralized marketplace</div><div class="b">One central bid / ask marketplace</div></div>
-      <div class="row"><div class="a">Little information or transparency</div><div class="b">Live price discovery, with reporting on every listed asset</div></div>
+      <div class="row"><div class="a">Little information or transparency</div><div class="b">Live price discovery, with AI-powered reporting on every listed asset</div></div>
       <div class="row"><div class="a">Layered ownership obscures fraud</div><div class="b">Immutable on-chain ownership, verifiable at the source</div></div>
-      <div class="row"><div class="a">ROFRs stall every transfer</div><div class="b">A pool of ROFR-waived equity, cleared to trade from day one</div></div>
+      <div class="row"><div class="a">ROFRs stall every transfer</div><div class="b">ROFR preprogrammed into the token, and handled automatically at transaction</div></div>
       <div class="row"><div class="a">Settlement takes 30 to 90 days</div><div class="b">Instant, atomic settlement with zero execution risk</div></div>
-      <div class="row"><div class="a">Borrowing against private equity shares is rare and bespoke</div><div class="b">An open borrow / lend market with continuous loan-to-value monitoring</div></div>
+      <div class="row"><div class="a">Borrowing against private equity shares is rare and bespoke</div><div class="b">An open borrow / lend market where the borrower chooses among available offers, cash or PIK</div></div>
+      <div class="row"><div class="a">Cap tables are reconciled by hand, and transfers take months</div><div class="b">Tokenized cap table management, with share transfers the company controls</div></div>
       <div class="row"><div class="a">Primary issuance requires banks, lawyers, and months</div><div class="b">Seamless primary issuance, with the click of a button</div></div>
       <div class="row"><div class="a">Legal documentation is slow, manual, and expensive</div><div class="b">Automated legal document generation</div></div>
     </div>
@@ -518,7 +647,7 @@
         <p>CTO</p>
         <div class="pbio" role="tooltip" id="bio-benoit"><div>
           <img class="pface" data-src="img/benoit.jpg" alt="" width="320" height="320" decoding="async">
-          <p class="ptext">Seb leads technology strategy and architecture. He has built systems across aerospace, renewable energy, AI, and most recently core protocol and identity infrastructure for the Celo blockchain network.</p>
+          <p class="ptext">Seb leads technology strategy and architecture. He has built systems across aerospace, renewable energy, AI, and most recently core protocol and identity infrastructure for the Celo blockchain.</p>
         </div></div>
       </div>
       <div class="person rv">
@@ -536,7 +665,7 @@
     <div class="eyebrow rv">Get in touch</div>
     <h2 class="rv">Let's unblock the flow.</h2>
     <span class="soon rv">Platform: Coming Soon</span>
-    <a class="mail rv" href="mailto:hello@phluidity.com">hello@phluidity.com</a>
+    <a class="libtn rv" href="https://linkedin.com/company/phluidity" target="_blank" rel="noopener">Contact us on LinkedIn<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 11L11 5M11 5H6M11 5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     <p class="note rv">For investor materials, platform access, or partnership enquiries. Phluidity Inc., New York.</p>
     <footer><span>© 2026 Phluidity Inc.</span></footer>
   </div></div></section>
