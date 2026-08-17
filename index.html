@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Phluidity: Private Market Liquidity, At Last</title>
 <meta name="description" content="Phluidity is the marketplace for private companies. Issue, sell, buy, borrow, lend." />
+<meta name="theme-color" content="#ffffff" id="tcol" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,6 +20,11 @@
     --blue-2:#3d68ff;
     --rule:#e2e7ee;
     --rule-2:#cfd7e2;
+    --blue-h:#0630d6;
+    --on-blue:#ffffff;
+    /* the page colour as bare channels, so every veil, scrim and translucent
+       panel can be written once and follow the theme */
+    --veil:255,255,255;
     --col:600px;
     --mask-on:#000;
 
@@ -28,14 +34,32 @@
     --fs-lab-3:9px;    --tk-lab-3:.26em;
     --fs-h-section:clamp(27px,3.35vw,47px);
   }
+  /* ---------- dark ---------- */
+  /* The same system inverted, not a second one: one accent, near-black page,
+     near-white ink, hairlines a shade off the page. The blue lifts because
+     #0b3cff on a dark ground reads as a hole rather than an accent. */
+  html[data-theme="dark"]{
+    --white:#06080c;
+    --paper:#0d1219;
+    --ink:#eef1f6;
+    --ink-2:#a6b0bd;
+    --ink-3:#78828f;
+    --blue:#5b86ff;
+    --blue-h:#82a2ff;
+    --rule:#1a212c;
+    --rule-2:#2a3341;
+    --veil:6,8,12;
+    --on-blue:#04060a;
+  }
+  html[data-theme="dark"] .pface{filter:grayscale(1) contrast(.95) brightness(.88)}
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
   body{background:var(--white);color:var(--ink);
     font-family:'Schibsted Grotesk',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
     font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   canvas#gl{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}
+  html{scroll-behavior:smooth}
   .scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
-    background:linear-gradient(90deg,rgba(255,255,255,0) 36%,rgba(255,255,255,.70) 52%,rgba(255,255,255,.95) 68%)}
+    background:linear-gradient(90deg,rgba(var(--veil),0) 36%,rgba(var(--veil),.70) 52%,rgba(var(--veil),.95) 68%)}
   @media(max-width:900px){
     .scrim{display:none}
   }
@@ -48,7 +72,7 @@
   .ylab{position:absolute;left:-56px;top:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
   .vt{position:absolute;left:12px;top:-32px;font-size:var(--fs-lab-1);font-weight:600;
     letter-spacing:var(--tk-lab-1);text-transform:uppercase;color:var(--ink-2)}
-  .lab{position:absolute;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;background:rgba(255,255,255,.88);padding:3px 7px}
+  .lab{position:absolute;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;background:rgba(var(--veil),.88);padding:3px 7px}
   .tick{position:absolute;bottom:-24px;font-size:10px;letter-spacing:.1em;color:var(--ink-3)}
   .gapline{position:absolute;border-left:1px dashed var(--rule-2)}
   main{position:relative;z-index:3}
@@ -68,8 +92,8 @@
             mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 34%,transparent 100%)}
   .navveil::after{content:'';position:absolute;inset:0;
     background:linear-gradient(to bottom,
-      rgba(255,255,255,.92) 0%,rgba(255,255,255,.78) 46%,
-      rgba(255,255,255,.34) 78%,rgba(255,255,255,0) 100%)}
+      rgba(var(--veil),.92) 0%,rgba(var(--veil),.78) 46%,
+      rgba(var(--veil),.34) 78%,rgba(var(--veil),0) 100%)}
   .topfade i:nth-child(1){backdrop-filter:blur(0.5px);-webkit-backdrop-filter:blur(0.5px);
     -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 60%,transparent 100%);
             mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 60%,transparent 100%)}
@@ -87,9 +111,9 @@
             mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 24%)}
   .topfade::after{content:'';position:absolute;inset:0;
     background:linear-gradient(to bottom,
-      rgba(255,255,255,.96) 0%,rgba(255,255,255,.93) 18%,rgba(255,255,255,.80) 34%,
-      rgba(255,255,255,.56) 52%,rgba(255,255,255,.28) 72%,rgba(255,255,255,.09) 87%,
-      rgba(255,255,255,0) 100%)}
+      rgba(var(--veil),.96) 0%,rgba(var(--veil),.93) 18%,rgba(var(--veil),.80) 34%,
+      rgba(var(--veil),.56) 52%,rgba(var(--veil),.28) 72%,rgba(var(--veil),.09) 87%,
+      rgba(var(--veil),0) 100%)}
   .botfade{position:fixed;bottom:0;left:0;right:0;height:104px;z-index:19;pointer-events:none}
   .botfade i:nth-child(1){backdrop-filter:blur(0.5px);-webkit-backdrop-filter:blur(0.5px);
     -webkit-mask-image:linear-gradient(to top,var(--mask-on) 0%,var(--mask-on) 58%,transparent 100%);
@@ -102,8 +126,8 @@
             mask-image:linear-gradient(to top,var(--mask-on) 0%,transparent 36%)}
   .botfade::after{content:'';position:absolute;inset:0;
     background:linear-gradient(to top,
-      rgba(255,255,255,.84) 0%,rgba(255,255,255,.60) 28%,rgba(255,255,255,.32) 54%,
-      rgba(255,255,255,.11) 78%,rgba(255,255,255,0) 100%)}
+      rgba(var(--veil),.84) 0%,rgba(var(--veil),.60) 28%,rgba(var(--veil),.32) 54%,
+      rgba(var(--veil),.11) 78%,rgba(var(--veil),0) 100%)}
   @media(max-width:900px){
     .topfade{height:128px}
     .botfade{height:76px}
@@ -119,9 +143,9 @@
   @media(prefers-reduced-transparency:reduce){
     .topfade i,.botfade i,.navveil i{display:none}
     .topfade::after{background:linear-gradient(to bottom,
-      var(--white) 0%,var(--white) 54%,rgba(255,255,255,0) 100%)}
+      var(--white) 0%,var(--white) 54%,rgba(var(--veil),0) 100%)}
     .botfade::after{background:linear-gradient(to top,
-      var(--white) 0%,rgba(255,255,255,0) 100%)}
+      var(--white) 0%,rgba(var(--veil),0) 100%)}
   }
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .topfade i,.botfade i,.navveil i{display:none}
@@ -135,8 +159,8 @@
     text-transform:uppercase;font-weight:500;transition:color .3s}
   .navlinks a:hover{color:var(--blue)}
   @media(max-width:760px){.navlinks a:not(.cta){display:none}}
-  a.cta{background:var(--blue);color:#fff;padding:11px 18px;transition:background .3s}
-  a.cta:hover{background:#0630d6}
+  a.cta{background:var(--blue);color:var(--on-blue);padding:11px 18px;transition:background .3s}
+  a.cta:hover{background:var(--blue-h)}
 
   /* ---------- layout ---------- */
   section{position:relative;padding:0 clamp(20px,4vw,52px);display:flex;align-items:center}
@@ -234,7 +258,7 @@
   .team{position:relative}
   .person:hover,.person:is(:has(.ptoggle:focus-visible)){z-index:5}
   .pbio{position:absolute;z-index:5;left:0;right:0;top:calc(100% - 5px);
-    background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+    background:rgba(var(--veil),.92);backdrop-filter:blur(14px);
     border:1px solid var(--rule);padding:18px 20px;
     opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);
     transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1),
@@ -278,12 +302,12 @@
   .mail{align-self:flex-start;margin-top:30px;font-size:clamp(18px,2.1vw,30px);max-width:100%;
     letter-spacing:-.025em;color:var(--blue);text-decoration:none;font-weight:400;
     border-bottom:2px solid var(--blue);padding-bottom:5px;transition:.35s}
-  .mail:hover{color:#0630d6;border-bottom-color:#0630d6}
+  .mail:hover{color:var(--blue-h);border-bottom-color:var(--blue-h)}
   .libtn{align-self:flex-start;margin-top:30px;display:inline-flex;align-items:center;gap:14px;
-    background:var(--blue);color:#fff;text-decoration:none;padding:16px 22px;
+    background:var(--blue);color:var(--on-blue);text-decoration:none;padding:16px 22px;
     font-size:var(--fs-lab-1);letter-spacing:var(--tk-lab-1);text-transform:uppercase;font-weight:500;
     transition:background .3s}
-  .libtn:hover{background:#0630d6}
+  .libtn:hover{background:var(--blue-h)}
   .libtn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
   .libtn svg{width:13px;height:13px;display:block;flex:none;
     transition:transform .35s cubic-bezier(.16,1,.3,1)}
@@ -297,7 +321,7 @@
 
   .next{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:21;
     width:36px;height:36px;border:1px solid var(--rule-2);border-radius:50%;
-    background:rgba(255,255,255,.85);backdrop-filter:blur(6px);color:var(--ink-2);
+    background:rgba(var(--veil),.85);backdrop-filter:blur(6px);color:var(--ink-2);
     display:flex;align-items:center;justify-content:center;cursor:pointer;
     transition:opacity .4s,border-color .3s,color .3s;padding:0}
   .next:hover{border-color:var(--blue);color:var(--blue)}
@@ -373,7 +397,20 @@
     html{scroll-behavior:auto}
     .pbio{transition:opacity .01s!important;transform:none!important}}
 </style>
-<script>document.documentElement.className+=' js';</script>
+<script>
+(function(){
+  var d=document.documentElement;
+  d.className+=' js';
+  /* Resolved before first paint, so the page never flashes the wrong ground.
+     The system preference is the only input, and it keeps applying: a machine
+     that switches theme mid-session switches the page with it. */
+  var sys=matchMedia('(prefers-color-scheme: dark)');
+  d.setAttribute('data-theme',sys.matches?'dark':'light');
+  if(sys.addEventListener) sys.addEventListener('change',function(e){
+    document.dispatchEvent(new CustomEvent('settheme',{detail:e.matches?'dark':'light'}));
+  });
+})();
+</script>
 </head>
 <body>
 <canvas id="gl"></canvas>
@@ -592,6 +629,18 @@ addEventListener('scroll',function(){
   moveT=setTimeout(function(){document.body.classList.remove('moving');},300);
 },{passive:true});
 
+/* ---------- theme ---------- */
+var THEME_BG={light:'#ffffff',dark:'#06080c'};
+var tmeta=document.getElementById('tcol');
+function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  if(tmeta) tmeta.setAttribute('content',THEME_BG[t]);
+  document.dispatchEvent(new CustomEvent('themepaint',{detail:t}));
+}
+setTheme(curTheme());
+document.addEventListener('settheme',function(e){ setTheme(e.detail); });
+
 /* ---------- renderer ---------- */
 var canvas=document.getElementById('gl'),renderer;
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -600,7 +649,7 @@ catch(e){canvas.style.display='none';return;}
 if(!renderer){canvas.style.display='none';return;}
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.setSize(innerWidth,innerHeight,false);
-renderer.setClearColor(0xffffff,1);
+renderer.setClearColor(curTheme()==='dark'?0x06080c:0xffffff,1);
 
 var cam=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,0.1,60);
 cam.position.set(0,0,3);
@@ -640,7 +689,7 @@ var U={
   uA:{value:0}, uB:{value:0}, uW:{value:new THREE.Vector2(4,2.5)}, uWidth:{value:0.010},
   uAlpha:{value:1}, uSSX:{value:1}, uSOX:{value:0}, uSSY:{value:1}, uSOY:{value:0}, uVert:{value:0},
   uStag:{value:0.5}, uSweep:{value:0}, uMouse:{value:new THREE.Vector2(0,0)}, uPointer:{value:0},
-  uWK:{value:1}, uRip:{value:1}, uStream:{value:1}
+  uWK:{value:1}, uRip:{value:1}, uStream:{value:1}, uDark:{value:curTheme()==='dark'?1:0}
 };
 var SHAPE_W  =[1.0, 1.0, 1.0, 0.80, 0.70, 1.0];
 var SHAPE_RIP=[1.0, 1.0, 1.0, 0.26, 0.70, 1.0];
@@ -829,16 +878,21 @@ var mat=new THREE.ShaderMaterial({
   fragmentShader:[
   'precision highp float;',
   'varying float vAlpha; varying float vLine; varying float vT;',
-  'uniform float uMorph;',
+  'uniform float uMorph,uDark;',
   'void main(){',
-  '  vec3 deep=vec3(0.031,0.196,1.000);',
-  '  vec3 light=vec3(0.325,0.514,1.000);',
+  '  vec3 deep=mix(vec3(0.031,0.196,1.000),vec3(0.243,0.404,1.000),uDark);',
+  '  vec3 light=mix(vec3(0.325,0.514,1.000),vec3(0.576,0.694,1.000),uDark);',
   '  vec3 col=mix(deep,light,smoothstep(0.0,1.0,vLine)*0.75);',
-  '  float a=mix(0.20,0.60,uMorph)*vAlpha;',
+  '  float a=mix(0.20,0.60,uMorph)*vAlpha*(1.0+uDark*0.30);',
   '  gl_FragColor=vec4(col,a);',
   '}'].join('\n')
 });
 scene.add(new THREE.Mesh(geo,mat));
+document.addEventListener('themepaint',function(e){
+  var dark=e.detail==='dark';
+  renderer.setClearColor(dark?0x06080c:0xffffff,1);
+  U.uDark.value=dark?1:0;
+});
 
 /* ---------- scroll → state ---------- */
 var S={narrow:0,morph:0,travel:0,mix:0,cOut:0}, T={narrow:0,morph:0,travel:0,mix:0,cOut:0};
@@ -914,9 +968,9 @@ addEventListener('blur',function(){pointerOn=0;});
 
 /* ---------- loop ---------- */
 var CHAIN=[
-  {a:1,b:5,stag:0.62,sweep:0},   /* canyon → marketplace : the gap converges on one venue */
-  {a:5,b:3,stag:0.55,sweep:1},   /* marketplace → ledger : the venue rules itself into rows */
-  {a:3,b:4,stag:0.45,sweep:0}    /* ledger → rails       : the rows become the people */
+  {a:1,b:5,stag:0.62,sweep:0}, /* canyon → marketplace : the gap converges on one venue */
+  {a:5,b:3,stag:0.55,sweep:1}, /* marketplace → ledger : the venue rules itself into rows */
+  {a:3,b:4,stag:0.45,sweep:0}  /* ledger → rails       : the rows become the people */
 ];
 var clock=new THREE.Clock(),t=0,lastPlotTop=1e9;
 function frame(){
