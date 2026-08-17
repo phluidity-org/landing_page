@@ -20,20 +20,12 @@
     --rule:#e2e7ee;
     --rule-2:#cfd7e2;
     --col:600px;
-    /* A stencil, not a colour. Mask gradients are read for their alpha alone,
-       so this never paints and is deliberately not part of the palette; it is
-       named only so it stops reading as a stray literal wherever it appears. */
     --mask-on:#000;
 
-    /* Type roles by purpose, not by value. Two families of uppercase label:
-       BRAND labels carry the wordmark's wide signature tracking at any size,
-       and FUNCTIONAL labels ride a ramp where tracking opens as size drops,
-       which is what keeps 9px legible without shouting at 11px. */
     --tk-brand:.30em;
     --fs-lab-1:11px;   --tk-lab-1:.18em;
     --fs-lab-2:10px;   --tk-lab-2:.22em;
     --fs-lab-3:9px;    --tk-lab-3:.26em;
-    /* the problem and leadership headings do the same job at the same weight */
     --fs-h-section:clamp(27px,3.35vw,47px);
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -42,7 +34,6 @@
     font-family:'Schibsted Grotesk',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
     font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   canvas#gl{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}
-  /* keeps the right-hand reading column clean without hiding the water */
   .scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
     background:linear-gradient(90deg,rgba(255,255,255,0) 36%,rgba(255,255,255,.70) 52%,rgba(255,255,255,.95) 68%)}
   @media(max-width:900px){
@@ -63,58 +54,14 @@
   main{position:relative;z-index:3}
 
   /* ---------- nav ---------- */
-  /* The bar carries no surface of its own. Everything behind it is handled by
-     .topfade below, so the nav is only its type. */
   nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;
     justify-content:space-between;padding:0 clamp(20px,4vw,52px);height:70px}
 
   /* ---------- the top fade ---------- */
-  /* Content does not disappear under a lid, it dissolves on the way out. There
-     is no bar and no hairline: the band simply gets blurrier and whiter the
-     closer to the top edge you read, so a line of type going up loses focus
-     before it loses itself.
-
-     A single blurred layer cannot do this. backdrop-filter takes one radius,
-     so masking it only fades a CONSTANT blur in and out and the boundary is
-     still there, just softer. So there are five layers, each blurring what is
-     already behind it, INCLUDING the layer before it. Their radii climb 0.5,
-     1.2, 3, 6.5, 14, and each is masked to sit closer to the top than the last,
-     so the radii compound where they overlap and the total runs smoothly from
-     nothing at the foot of the band to about 25px at the very top. Compounding
-     is the whole trick; five separately masked blurs would just be five edges.
-
-     The band is 190px, and the height is the part that was wrong at first. At
-     132px the whole ramp had to happen inside a single line of display type:
-     the first line of a hero came out heavily smeared while the second was
-     already perfectly sharp, which reads as a smudged duplicate sitting over
-     the nav rather than as a line dissolving. A ramp needs to be longer than
-     the thing travelling through it. Each layer now feathers over roughly 40%
-     of the band, about 76px, instead of dropping out inside 34px.
-
-     The veil rides on top and is weighted to hold the nav's own type: it stays
-     near opaque across the 70px the bar occupies and only then falls away, and
-     it now falls away over the remaining 120px rather than 60. Peak blur is
-     reached only in the top handful of pixels, where the veil is at .96 and
-     there is almost nothing left to smear. */
-  /* Both bands are TRANSIT effects and are carried on movement alone. The point
-     of the dissolve is to soften what is leaving the frame; once the page has
-     come to rest nothing is leaving, and all the band does then is sit on the
-     parked section's own eyebrow and blur it. Sections settle with their first
-     line about 90px down, which is inside a 190px band however the band is
-     shaped, so no amount of tuning the ramp fixes this. It is not a ramp
-     problem, it is a question of when the effect should exist at all.
-
-     So they fade in on scroll and back out once the page settles, and what
-     stays behind is .navveil below: a short veil, no taller than the bar
-     itself, whose only job is to keep the wordmark legible where the water
-     runs under it. Faster in than out, because arriving late reads as lag
-     while leaving slowly reads as a settle. */
   .topfade,.botfade{opacity:0;transition:opacity .45s ease}
   body.moving .topfade,body.moving .botfade{opacity:1;transition:opacity .16s ease}
   .topfade{position:fixed;top:0;left:0;right:0;height:190px;z-index:19;pointer-events:none}
   .topfade i,.botfade i,.navveil i{position:absolute;inset:0;display:block}
-  /* the permanent part: 72px, so it stops short of where a settled section puts
-     its first line, and gone entirely by its own foot rather than at an edge */
   .navveil{position:fixed;top:0;left:0;right:0;height:72px;z-index:19;pointer-events:none}
   .navveil i{backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
     -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 34%,transparent 100%);
@@ -143,18 +90,6 @@
       rgba(255,255,255,.96) 0%,rgba(255,255,255,.93) 18%,rgba(255,255,255,.80) 34%,
       rgba(255,255,255,.56) 52%,rgba(255,255,255,.28) 72%,rgba(255,255,255,.09) 87%,
       rgba(255,255,255,0) 100%)}
-  /* The same idea at the foot of the screen, deliberately smaller. Content
-     arrives from below as well as leaving above, and a hard bottom edge gives
-     the page away as a window; softening it lets the column read as continuing
-     past the frame rather than stopping at it.
-
-     It is about half the depth of the top band and a quarter of its blur, three
-     layers peaking near 7px against 25px. It has to stay the lesser of the two:
-     the top band is doing a job, holding the navigation off what passes under
-     it, while this one is only easing an edge, and matching them would leave
-     the page looking pinched between two equal fogs. The veil is lighter for
-     the same reason, since there is no type sitting on it. The Next control and
-     the section guide are at z-21 and stay perfectly sharp above it. */
   .botfade{position:fixed;bottom:0;left:0;right:0;height:104px;z-index:19;pointer-events:none}
   .botfade i:nth-child(1){backdrop-filter:blur(0.5px);-webkit-backdrop-filter:blur(0.5px);
     -webkit-mask-image:linear-gradient(to top,var(--mask-on) 0%,var(--mask-on) 58%,transparent 100%);
@@ -169,9 +104,6 @@
     background:linear-gradient(to top,
       rgba(255,255,255,.84) 0%,rgba(255,255,255,.60) 28%,rgba(255,255,255,.32) 54%,
       rgba(255,255,255,.11) 78%,rgba(255,255,255,0) 100%)}
-  /* a shorter band and three layers on small screens, where this sits over the
-     same WebGL field on far less GPU. The type is smaller there too, so the
-     ramp still outruns a line of it. */
   @media(max-width:900px){
     .topfade{height:128px}
     .botfade{height:76px}
@@ -184,7 +116,6 @@
       -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%);
               mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%)}
   }
-  /* a reader who has asked for less transparency gets the veil and no blur */
   @media(prefers-reduced-transparency:reduce){
     .topfade i,.botfade i,.navveil i{display:none}
     .topfade::after{background:linear-gradient(to bottom,
@@ -192,7 +123,6 @@
     .botfade::after{background:linear-gradient(to top,
       var(--white) 0%,rgba(255,255,255,0) 100%)}
   }
-  /* no backdrop-filter: the veil alone still carries the fade */
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .topfade i,.botfade i,.navveil i{display:none}
   }
@@ -252,20 +182,18 @@
   #intro{min-height:95svh;padding-top:10svh;padding-bottom:10svh}
   #intro h2{font-size:clamp(29px,3.8vw,54px)}
   #intro h2 em{font-style:normal;color:var(--blue)}
-  /* The capability register. Same hairline vocabulary as the ledger and
-     deliberately not the same shape: one column of capabilities against the
-     mechanism each one rests on, opened by a 2px rule, closed row by row. No
-     fills, no boxes, no second accent. */
-  .register{margin-top:34px;border-top:2px solid var(--ink);max-width:68ch}
-  .rlab{padding:6px 0 7px;border-bottom:1px solid var(--rule);
+  .register{margin-top:26px;border-top:2px solid var(--ink);max-width:68ch}
+  .rlab{padding:5px 0 6px;border-bottom:1px solid var(--rule);
     font-size:var(--fs-lab-3);letter-spacing:var(--tk-lab-3);text-transform:uppercase;
     font-weight:600;color:var(--ink-3)}
-  .reg{display:grid;grid-template-columns:1fr 1.5fr;gap:22px;padding:11px 0;
+  .reg{display:grid;grid-template-columns:1fr 1.5fr;gap:22px;padding:8px 0;
     border-bottom:1px solid var(--rule);align-items:baseline}
   .reg .k{color:var(--ink);font-size:clamp(13px,1vw,15px);font-weight:500;letter-spacing:-.01em}
   .reg .v{color:var(--ink-3);font-size:clamp(11.5px,.84vw,12.5px);line-height:1.4}
   @media(max-width:640px){.reg{grid-template-columns:1fr;gap:5px}}
 
+  #intro .body{margin-top:18px}
+  #intro .body + .body{margin-top:15px}
   /* ---------- solution ---------- */
   #solution{min-height:100svh;padding-top:8svh;padding-bottom:4svh}
   #solution h2{font-size:clamp(23px,2.7vw,36px)}
@@ -277,8 +205,6 @@
   .lhead span:last-child{color:var(--blue)}
   .row{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;padding:6.5px 0;
     border-bottom:1px solid var(--rule);align-items:baseline}
-  /* the entrance state is only armed once scripting is confirmed, so a failed
-     or blocked script can never leave the page invisible */
   .js .row{opacity:0;transform:translateY(12px);
     transition:opacity .62s cubic-bezier(.16,1,.3,1),transform .62s cubic-bezier(.16,1,.3,1)}
   .js .row.in{opacity:1;transform:none}
@@ -292,36 +218,19 @@
   /* ---------- leadership ---------- */
   #leadership{min-height:95svh;padding-top:10svh;padding-bottom:10svh}
   #leadership h2{font-size:var(--fs-h-section)}
-  /* 48ch is a much shorter line than .body's 63ch, so it needs less leading,
-     not the same amount */
   .lsub{color:var(--ink-2);font-size:clamp(15px,1.15vw,17px);line-height:1.6;margin-top:22px;max-width:48ch}
   .team{margin-top:48px;border-top:2px solid var(--ink)}
   .person{position:relative;display:grid;grid-template-columns:1fr auto;gap:0 16px;align-items:baseline;
     padding:18px 0;border-bottom:1px solid var(--rule)}
   .person h3{font-size:clamp(18px,1.6vw,23px);font-weight:400;letter-spacing:-.025em}
-  /* direct child only: the role label, never the bio paragraph nested below */
   .person>p{font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);text-transform:uppercase;color:var(--blue);
     font-weight:600;text-align:right}
 
-  /* The bio appears on hover and on focus, and nothing here is clickable: no
-     button, no pointer cursor, no state to toggle. The name still takes focus
-     so a keyboard (and a tap, which focuses) can reach the bio, and the
-     ::before stretches that hover target across the whole row. */
   .ptoggle{font:inherit;letter-spacing:inherit;color:inherit;
     text-align:left;cursor:default}
   .ptoggle::before{content:'';position:absolute;inset:0}
   .ptoggle:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
 
-  /* The bio floats rather than expanding the row, so hovering the list never
-     moves the names under the pointer. Same material the nav uses to sit over
-     the water: translucent white, a backdrop blur and a hairline. No shadow,
-     no radius. */
-  /* Keyboard focus reveals the bio; a mouse click must not. A click on a
-     focusable name leaves it focused, and :focus-within would then hold the
-     bio open after the pointer had moved away, which reads as a click target
-     the name is not. :focus-visible is exactly the distinction the browser
-     already draws, and the :has() sits inside :is() so the whole selector
-     list still parses where :has() is unsupported. */
   .team{position:relative}
   .person:hover,.person:is(:has(.ptoggle:focus-visible)){z-index:5}
   .pbio{position:absolute;z-index:5;left:0;right:0;top:calc(100% - 5px);
@@ -333,22 +242,17 @@
   .pbio>div{display:flex;gap:18px;align-items:flex-start}
   .pface{width:84px;height:84px;flex:none;border-radius:50%;object-fit:cover;
     filter:grayscale(1) contrast(1.03)}
-  /* portrait pending: initials in the label voice, not a broken image */
   .pface-soon{display:flex;align-items:center;justify-content:center;
     border:1px solid var(--rule-2);color:var(--ink-3);
     font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);font-weight:600}
   .ptext{font-size:13px;line-height:1.62;color:var(--ink-2)}
   .person:hover .pbio,.person:is(:has(.ptoggle:focus-visible)) .pbio{
     opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s,0s,0s}
-  /* Touch has no real hover and gives no :focus-visible, so there plain focus
-     is the reveal: a tap opens one bio, a tap anywhere else takes it away. */
   @media(hover:none){
     .person:focus-within{z-index:5}
     .person:focus-within .pbio{
       opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s,0s,0s}
   }
-  /* Wide enough to clear the reading column: the tooltip moves out over the
-     water, where there is nothing to cover, and stacks portrait over bio. */
   @media(min-width:1120px){
     .pbio{left:auto;right:100%;top:50%;bottom:auto;width:326px;margin-right:26px;
       transform:translateY(-50%) translateX(-6px)}
@@ -357,8 +261,6 @@
     .pbio>div{flex-direction:column;gap:14px}
     .pface{width:96px;height:96px}
   }
-  /* a large tablet gets the side layout and the touch reveal at once, so it
-     needs the vertical centering the hover rule above would have given it */
   @media(min-width:1120px) and (hover:none){
     .person:focus-within .pbio{transform:translateY(-50%)}
   }
@@ -377,9 +279,6 @@
     letter-spacing:-.025em;color:var(--blue);text-decoration:none;font-weight:400;
     border-bottom:2px solid var(--blue);padding-bottom:5px;transition:.35s}
   .mail:hover{color:#0630d6;border-bottom-color:#0630d6}
-  /* The contact route is now a control rather than an address: the same square
-     Settlement Blue fill and uppercase functional label as the nav CTA, one
-     step larger because it is the page's terminal action. */
   .libtn{align-self:flex-start;margin-top:30px;display:inline-flex;align-items:center;gap:14px;
     background:var(--blue);color:#fff;text-decoration:none;padding:16px 22px;
     font-size:var(--fs-lab-1);letter-spacing:var(--tk-lab-1);text-transform:uppercase;font-weight:500;
@@ -410,12 +309,6 @@
 
   .guide{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:21;
     display:flex;flex-direction:column;gap:10px;align-items:center}
-  /* The active marker extends by growing past its own box rather than by
-     scaling. scaleY stretches the corner radius with everything else, so a
-     6px circle at 3.3x became a 20px ellipse: pointed, and too long for the
-     column. Growing the absolutely positioned ::before keeps the radius at a
-     true 3px, so the marker is a capsule with the same round ends as the dots
-     it sits among. It is still out of flow, so its neighbours do not move. */
   .guide a{width:6px;height:6px;display:block;position:relative}
   .guide a::before{content:'';position:absolute;inset:0;border-radius:3px;
     background:var(--rule-2);
@@ -430,14 +323,7 @@
     transition:opacity .72s cubic-bezier(.16,1,.3,1),transform .72s cubic-bezier(.16,1,.3,1)}
   .js .rv.in{opacity:1;transform:none}
   @media(max-width:900px){
-    /* the whole label ramp steps down together, instead of a per-rule override */
     :root{--fs-lab-1:10px;--fs-lab-2:9px;--fs-lab-3:8.5px;--fs-h-section:22px}
-    /* No scroll-snap here. The page already navigates by JS anchors (Next, the
-       nav links, the guide), and proximity snap competed with every one of them:
-       it caught programmatic scrolls mid-travel and settled on a different
-       section, which is what made Next, the wordmark and Get in touch land
-       "back in the same spot". scroll-margin-top below is still mirrored onto
-       the anchors, so a native #hash jump lands correctly if scripting fails. */
     section{align-items:flex-start;min-height:100svh;scroll-snap-align:start}
     #hero{padding-top:36svh;min-height:100svh}
     #hero h1{font-size:clamp(30px,8.6vw,38px)}
@@ -485,7 +371,6 @@
   }
   @media(prefers-reduced-motion:reduce){.rv,.row{opacity:1!important;transform:none!important}
     html{scroll-behavior:auto}
-    /* the bio still opens, it just stops travelling to get there */
     .pbio{transition:opacity .01s!important;transform:none!important}}
 </style>
 <script>document.documentElement.className+=' js';</script>
@@ -510,8 +395,6 @@
   <span class="tick" style="right:0">2025</span>
 </div></div>
 
-
-
 <button class="next" id="next" aria-label="Next section" type="button">
   <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
@@ -528,7 +411,7 @@
 <nav id="nav">
   <a class="wordmark" id="logo" href="#hero" aria-label="Phluidity, back to top">Ph<b>l</b>uidity</a>
   <div class="navlinks">
-    <a href="#problem">Problem</a><a href="#solution">Platform</a><a href="#leadership">Team</a>
+    <a href="#problem">Problem</a><a href="#intro">Platform</a><a href="#leadership">Team</a>
     <a class="cta" href="#contact">Get in touch</a>
   </div>
 </nav>
@@ -572,11 +455,11 @@
     <div class="register rv">
       <div class="rlab">What the infrastructure supports</div>
       <div class="reg"><div class="k">Issuance &amp; cap table</div>
-        <div class="v">Tokenized share issuance with seamless transfers and process support</div></div>
+        <div class="v">Seamless tokenized issuance, transfers, and process support</div></div>
       <div class="reg"><div class="k">Ownership verification</div>
         <div class="v">Enhanced information and equity ownership verified on-chain</div></div>
       <div class="reg"><div class="k">Secondaries</div>
-        <div class="v">Secondary trades that settle atomically, with ROFR programmed in</div></div>
+        <div class="v">Secondary trades, settled atomically, with ROFR programmed in</div></div>
       <div class="reg"><div class="k">Lending</div>
         <div class="v">Equity-backed loans against private positions</div></div>
       <div class="reg"><div class="k">AI-powered reporting</div>
@@ -680,26 +563,15 @@
 var io=new IntersectionObserver(function(es){es.forEach(function(e){
   if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},
   {threshold:.15,rootMargin:'0px 0px -6% 0px'});
-/* Stagger restarts per section and is capped, so a section reads as one arrival
-   rather than a queue the reader has to wait out. */
 document.querySelectorAll('section').forEach(function(s){
   s.querySelectorAll('.rv').forEach(function(el,i){
     el.style.transitionDelay=Math.min(i*70,280)+'ms'; io.observe(el);});
 });
 document.querySelectorAll('.row').forEach(function(el,i){
   el.style.transitionDelay=Math.min(i*52,380)+'ms'; io.observe(el);});
-/* The bio is shown entirely in CSS, on :hover and :focus-within. There is no
-   open state and nothing to click; a tap focuses the name, which is what shows
-   the bio on touch, and touching anywhere else takes the focus away again.
-   Escape is all that is left to do here, since hover and focus content must
-   stay dismissible without moving the pointer. */
 addEventListener('keydown',function(e){
   if(e.key==='Escape' && document.activeElement) document.activeElement.blur();
 });
-/* The portraits sit inside a collapsed, clipped container, so native lazy
-   loading cannot tell they are coming. Fetch them as the section approaches
-   instead: nothing downloads for a visitor who never reaches the team, and
-   every face is decoded before a hover is physically possible. */
 var teamEl=document.querySelector('.team');
 if(teamEl){
   var faceIO=new IntersectionObserver(function(es){
@@ -713,17 +585,6 @@ if(teamEl){
   },{rootMargin:'250px 0px'});
   faceIO.observe(teamEl);
 }
-/* The nav used to gain a hairline once scrolled, which is the boundary the top
-   fade exists to get rid of. That listener is gone; this one does a different
-   job. The two fade bands are transit effects, so they are carried while the
-   page is moving and dropped once it settles, which is what keeps them off a
-   parked section's own heading.
-
-   The delay has to outlast the scroll magnet, not just the reader. The magnet
-   waits 180ms after the last input and then eases for up to 640ms, and every
-   frame of that eased scroll fires this listener again, so the timer keeps
-   being pushed forward and the bands stay up for the whole correction. They
-   are released a beat after the page has actually stopped, spring and all. */
 var moveT=null;
 addEventListener('scroll',function(){
   document.body.classList.add('moving');
@@ -749,7 +610,7 @@ var scene=new THREE.Scene();
 var LINES = innerWidth<760 ? 34 : 52;
 var SEG   = innerWidth<760 ? 120 : 190;
 var vCount=LINES*(SEG+1)*2;
-var pos=new Float32Array(vCount*3);      // unused placeholder; all positions come from the shader
+var pos=new Float32Array(vCount*3);
 var aLine=new Float32Array(vCount), aT=new Float32Array(vCount), aSide=new Float32Array(vCount);
 var idx=[];
 var v=0;
@@ -781,102 +642,30 @@ var U={
   uStag:{value:0.5}, uSweep:{value:0}, uMouse:{value:new THREE.Vector2(0,0)}, uPointer:{value:0},
   uWK:{value:1}, uRip:{value:1}, uStream:{value:1}
 };
-/* per shape id: stroke weight, and how much of the water ripple survives.
-   A diagram wants a finer, stiller line than the river does. */
 var SHAPE_W  =[1.0, 1.0, 1.0, 0.80, 0.70, 1.0];
 var SHAPE_RIP=[1.0, 1.0, 1.0, 0.26, 0.70, 1.0];
-/* how strongly the ink streams along each shape's strands. Geometry is never
-   touched, so this can run everywhere without any shape appearing to breathe.
-   The ledger runs slightly above 1: its rules are long and horizontal, so the
-   current reads as travel rather than shimmer and can carry more than the river
-   without drawing attention to itself. */
 var SHAPE_STREAM=[1.0, 1.0, 1.0, 1.035, 1.0, 1.0];
 
 var SHAPES=[
-'  /* strands below RSPLIT draw the ledger rules, the rest draw its ties.',
-'     Shared by the shape and by the tail mask in main(), so the two can never',
-'     disagree about where a given tie lives. */',
 '  const float RSPLIT=0.62;',
 '  const float RD=5.0;',
 '  const float RRUN=0.30;',
-'  /* Six rules, not the eight it started with. The pitch between rows is the',
-'     one thing held fixed across that change, so the ledger loses two lines of',
-'     height rather than restretching the same table over less of it, and the',
-'     span and floor below are derived from that pitch about the old centre so',
-'     it shortens from both ends and stays balanced against the column. */',
 '  const float RN=6.0;',
 '  const float RLO=-0.667;',
 '  const float RSPAN=1.164;',
 '  float tieG(float li){ return floor(((li-RSPLIT)/(1.0-RSPLIT))*(RD-0.001)); }',
-'  /* Where a given row of the ledger sits. Clamped, because the cascade below',
-'     parks every row one place higher before it settles and the top row has',
-'     nowhere higher to go: it simply holds while the rest unpack beneath it. */',
 '  float rowY(float g){ return RLO+RSPAN*(clamp(g,0.0,RN-1.0)/(RN-1.0)); }',
-'  /* The ledger does not arrive all at once. Each rule comes out from under the',
-'     rule above it and drops onto its own row, so the table writes itself down',
-'     the page as you scroll. The order is by ROW, not by strand index: a tie',
-'     belongs to a pair of rules and has to travel with them, and its strands',
-'     live at the far end of li where the cross-fade sweep would otherwise hand',
-'     them over well ahead of the rows they connect. Same quintic as xfade so',
-'     the two motions stay in step. */',
 '  const float RSTAG=1.9;',
 '  float rowRev(float g){',
 '    float lead=(RN-1.0-g)/(RN-1.0);',
 '    float m=clamp(uMix*(1.0+RSTAG)-RSTAG*lead,0.0,1.0);',
 '    return m*m*m*(m*(m*6.0-15.0)+10.0);',
 '  }',
-'  /* EXPERIMENT. The ties no longer drift sideways. A tie is an event that',
-'     snakes in from the left edge, runs along the upper rule, cuts down at its',
-'     step and carries on out past the right edge.',
-'',
-'     None of the geometry changed to do this. The path is the one it always',
-'     had: a run along the upper rule, one smoothstepped descent, a run along',
-'     the lower one. What moves is a WINDOW of ink travelling that path, opened',
-'     between a head and a tail a fixed distance behind it.',
-'',
-'     SNAKE is that body length and it is set to 2.04, which is exactly the',
-'     drawn width. That number is the whole shape of the event: the head enters',
-'     at the left edge with the body still off frame, and at the one instant the',
-'     head reaches the right edge the tail is arriving at the left, so the strand',
-'     spans the full width edge to edge. After that it draws out to the right,',
-'     the tail crossing the frame the head has already left. Head travel is',
-'     therefore two widths, half of it feeding in and half of it feeding out.',
-'',
-'     The length pays for itself twice. It carries the corner: with a body that',
-'     much longer than the 0.30 descent, the bend sits inside the strand for 57%',
-'     of a pass at a constant rate, against 40% when the body was 0.85. The',
-'     earlier fix for that was to slow the head through the corner, and it is',
-'     gone: easing the rate is the opposite of fluid, and with a body this long',
-'     it buys nothing. The head crosses at one steady speed. */',
 '  const float SNAKE=2.04;',
 '  const float TRAVEL=2.04+SNAKE;',
-'  /* Pace. A pass is 2.0s and the head crosses the drawn width in almost',
-'     exactly a second, against 4.8s two rounds ago, with a descent landing',
-'     somewhere on the ledger every 0.56s. Speed is free here: the share of a',
-'     pass that carries a visible corner is a ratio, so winding the clock down',
-'     changes how fast everything moves without touching how much of it there',
-'     is to see. The descent counts below are identical at 4.2s and at 2.4s. */',
 '  const float TCYC=2.8;',
 '  const float TACT=0.72;',
 '  const float TJIT=0.16;',
-'  /* Staggering, in two parts, because the first attempt got both wrong.',
-'',
-'     Giving every tie its own cycle length looks like the way to keep them',
-'     apart and does the exact opposite: periods of five to ten seconds BEAT',
-'     against one another, sliding into alignment and out again. So all five now',
-'     share ONE cycle and take evenly spaced slots in it, a fifth apart, handed',
-'     out in a scattered order so the sequence does not read as a rotation down',
-'     the rules. The even spacing is what makes the count unable to collapse;',
-'     the per-pass jitter is what stops it being a metronome.',
-'',
-'     The second mistake was scheduling the wrong MOMENT. Slotting the entries',
-'     evenly spaces out when ties arrive at the left edge, which is not an event',
-'     anyone can see: a snake lying along a rule is indistinguishable from the',
-'     rule, it just makes it a little heavier. The only legible thing a tie does',
-'     is turn its corner, and that was left to fall wherever it happened to. It',
-'     showed: with the entries evenly spread the ledger had no visible descent',
-'     anywhere on it 7.3 times a minute. So what the slot fixes now is the',
-'     midpoint of the DESCENT, and the pass is built backwards around it. */',
 '  float tieSlotT(float g){',
 '    if(g<0.5) return 0.0;',
 '    if(g<1.5) return 0.6;',
@@ -885,33 +674,14 @@ var SHAPES=[
 '    return 0.4;',
 '  }',
 '  float tieHash(float n){ return fract(sin(n*17.13)*43758.5453); }',
-'  /* Which pass this tie is on. Taken from the UNJITTERED slot, so the jitter',
-'     can only move where inside a pass we sit, never which pass it is, which is',
-'     what keeps a tie from ever jumping mid-flight. */',
 '  float tiePass(float g){ return floor(uTime/TCYC-tieSlotT(g)+0.5); }',
-'  /* signed distance from this tie\'s scheduled descent, in cycles */',
 '  float tieDelta(float g){',
 '    float n=tiePass(g);',
 '    return uTime/TCYC-tieSlotT(g)-TJIT*(tieHash(n*5.3+g*2.7)-0.5)-n;',
 '  }',
-'  /* Where this pass cuts down, redrawn each pass and held clear of both edges',
-'     so there is always a run along the upper rule before the corner and',
-'     another along the lower one after it.',
-'',
-'     The range is written around the CORNER, not around x0, and that is the',
-'     point of these particular numbers. x0 is where the descent begins, so a',
-'     range centred on zero puts the corner itself, half a run further along,',
-'     to the right of centre. The first version ran x0 from -0.30 to 0.45 and',
-'     dropped four corners in five into the right half of the frame. Offsetting',
-'     the range by half a run puts the midpoint of the descent on the centre',
-'     line and splits them fifty-fifty, spread evenly across ten twelfths of',
-'     the width with only the outermost sixth left clear. */',
 '  float tieX0(float g){',
 '    return mix(-0.90,0.60,tieHash(tiePass(g)*3.7+g*11.3));',
 '  }',
-'  /* How far into a pass this tie is halfway through its corner. It moves with',
-'     the step position, so the slot above pins the descent itself rather than',
-'     something that merely correlates with it. */',
 '  float tieQ(float g){ return (tieX0(g)+1.02+(RRUN+SNAKE)*0.5)/TRAVEL; }',
 '  float tieInk(float g,float t){',
 '    float ph=tieDelta(g)+tieQ(g)*TACT;',
@@ -921,7 +691,6 @@ var SHAPES=[
 '    float x=mix(-1.02,1.02,t), f=0.18;',
 '    return smoothstep(tail,tail+f,x)*(1.0-smoothstep(head-f,head,x));',
 '  }',
-'  // 0: open river, laminar, meandering, ebbing, choked at the throat',
 '  vec2 river(float li,float t){',
 '    float x=mix(-1.18,1.18,t);',
 '    float lane=li*2.0-1.0;',
@@ -934,7 +703,6 @@ var SHAPES=[
 '      +0.020*sin(x*5.2-uTime*0.45+lane*2.2);',
 '    return vec2(x,y);',
 '  }',
-'  // 1: the canyon, paper value compounds away from realized gains',
 '  vec2 canyon(float li,float t){',
 '    float x=mix(-1.0,1.0,t); float u=t;',
 '    float up=-0.70+0.1316*exp(2.34*u);',
@@ -943,7 +711,6 @@ var SHAPES=[
 '    float y=mix(lo,up,k)+(li-0.5)*0.045;',
 '    return vec2(x,y);',
 '  }',
-'  // 2: secondary volume, a widening growth fan',
 '  vec2 fan(float li,float t){',
 '    float x=mix(-1.0,1.0,t); float u=t;',
 '    float top=-0.66+1.44*pow(u,1.55);',
@@ -951,19 +718,7 @@ var SHAPES=[
 '    float y=mix(lo,top,pow(li,1.18));',
 '    return vec2(x,y);',
 '  }',
-'  // 3: the ledger as a railroad, the ruled lines of the table, with short',
-'  //     staggered diagonals stepping down from each rule to the one beneath.',
-'  //     Strands are budgeted between the rules and the ties by li, and every',
-'  //     bundle is spaced perpendicular to its own run so the strands stay',
-'  //     legible on the diagonals as well as the flats.',
 '  vec2 rules(float li,float t,float ing){',
-'    /* Scaled with the row count, not left where it was. The field has the same',
-'       52 strands however many rules share them, so dropping to six bundles put',
-'       a third more of them inside each one; at the old 0.040 they packed a',
-'       quarter tighter and, under the squash mobile puts on the band, would',
-'       have fused into a solid line. This holds the gap between strands exactly',
-'       where it was at every width. The bundle is correspondingly fuller, at',
-'       just under a quarter of the row pitch against a sixth before. */',
 '    float N=RN, split=RSPLIT, spread=0.0533;',
 '    if(li<split){',
 '      float u=li/split;',
@@ -973,17 +728,9 @@ var SHAPES=[
 '    }',
 '    float u=(li-split)/(1.0-split);',
 '    float g=tieG(li), loc=fract(u*(RD-0.001));',
-'    /* a tie unpacks with the pair of rules it joins, so it takes its cascade',
-'       offset from the lower of the two rather than from its own strand index */',
 '    float c=ing*(1.0-rowRev(g));',
 '    float yA=rowY(g+1.0+c);',
 '    float yB=rowY(g+c);',
-'    /* A tie is a FULL-WIDTH strand: it runs the upper rule, steps down once,',
-'       and runs the lower rule to the edge. Full width is what makes the morph',
-'       read, since the strand never has to shorten and drift into place; main()',
-'       hides the two horizontal tails once the ledger has settled so they do',
-'       not double the rules. The step is a smoothstep, so it leaves and rejoins',
-'       each rule tangentially rather than cornering into it. */',
 '    float x=mix(-1.02,1.02,t);',
 '    float x0=tieX0(g);',
 '    float pl=clamp((x-x0)/RRUN,0.0,1.0);',
@@ -991,43 +738,25 @@ var SHAPES=[
 '    float dp=6.0*pl*(1.0-pl)/RRUN;',
 '    float sl=(uW.y*0.42)/max(0.001,uSSX*uW.x*0.5);',
 '    float m=sl*(yB-yA)*dp;',
-'    /* Offset each strand along the true normal rather than stretching a',
-'       vertical lane. On the flats m is 0 and this collapses to the same plain',
-'       y offset the rules use, so a tie lands exactly on the rule it joins. */',
-'    /* The tie sits in the rule, not beside it. Offsetting it read as a second',
-'       line shadowing every rule, which is worse than the problem it solved.',
-'       So it shares the rules\' own bundle and its flats lie along them: where',
-'       a tie is running, that rule simply carries a little more weight. */',
 '    float inv=inversesqrt(1.0+m*m), jit=(loc-0.5)*spread;',
 '    return vec2(x-jit*sl*m*inv, mix(yA,yB,p)+jit*inv);',
 '  }',
-'  // 4: five rails, one per founder',
 '  vec2 rails(float li,float t){',
 '    float g=floor(li*4.999);',
 '    float loc=fract(li*4.999);',
 '    float x=mix(-1.0,1.0,t);',
 '    float th=4.2*t+g*2.513+uTime*0.042;',
 '    float y=0.40*sin(th);',
-'    /* Space the strands perpendicular to the rail rather than vertically. A',
-'       vertical offset foreshortens to nothing wherever the rail is steep,',
-'       which is why each curve stayed feathered at its crests and went solid',
-'       through the middle. The screen slope has to account for the horizontal',
-'       squeeze (uSSX) or the correction is wrong on mobile. */',
 '    float sl=(uW.y*0.42)/max(0.001,uSSX*uW.x*0.5);',
 '    float m=sl*0.84*cos(th);',
 '    y+=(loc-0.5)*0.072*sqrt(1.0+m*m);',
 '    return vec2(x,y);',
 '  }',
-'  // 5: the marketplace, many nodes fan in to one venue, then fan out again',
 '  vec2 conf(float li,float t){',
 '    float x=mix(-1.05,1.05,t);',
 '    float u=t;',
 '    float pinch=smoothstep(0.05,0.46,u)*smoothstep(0.95,0.54,u);',
 '    pinch=pow(pinch,1.25);',
-'    /* The mouths were tall enough that the venue read as a bow tie filling the',
-'       frame rather than as many routes converging on one place. Pulling the',
-'       open end in keeps the convergence, which is the whole point of the',
-'       shape, and lets the throat stay exactly as tight as it was. */',
 '    float spread=mix(0.56,0.035,pinch);',
 '    float lane=li*2.0-1.0;',
 '    float y=lane*spread',
@@ -1035,8 +764,6 @@ var SHAPES=[
 '      +0.010*sin(uTime*0.5+li*9.0)*pinch;',
 '    return vec2(x,y);',
 '  }',
-'  /* ing marks the shape being handed TO. Only the incoming ledger cascades in;',
-'     the outgoing one is already ruled and must sit still while it is left. */',
 '  vec2 shape(int id,float li,float t,float ing){',
 '    if(id==1) return canyon(li,t);',
 '    if(id==2) return fan(li,t);',
@@ -1045,10 +772,6 @@ var SHAPES=[
 '    if(id==5) return conf(li,t);',
 '    return river(li,t);',
 '  }',
-'  /* One cross-fade law for every hand-off. Strands change allegiance in a',
-'     staggered sweep, so a transition reads as flow through the field and never',
-'     as the whole band scaling up and back down. The quintic is flat in both',
-'     value AND slope at 0 and 1, so segment boundaries have no velocity kink. */',
 '  float xfade(float li){',
 '    float lead=mix(li,1.0-li,uSweep);',
 '    float m=clamp(uMix*(1.0+uStag)-uStag*lead,0.0,1.0);',
@@ -1058,14 +781,7 @@ var SHAPES=[
 '    vec2 r=river(li,t);',
 '    vec2 s=mix(shape(uA,li,t,0.0),shape(uB,li,t,1.0),xfade(li));',
 '    s.x=s.x*uSSX+uSOX;',
-'    /* the living ripple is water\'s, not a diagram\'s. uRip stills it as the',
-'       field resolves into ruled geometry */',
 '    s.y+=uRip*(0.011*sin(uTime*0.55+t*4.6+li*9.4)+0.006*sin(uTime*0.34+t*10.7+li*3.1));',
-'    /* Nothing moves the strand off its path any more. Every earlier attempt at',
-'       rest-state life displaced the geometry, and displaced geometry always',
-'       reads as breathing however small it is, because the outline of the band',
-'       changes shape. The motion now lives entirely in the ink: see uStream in',
-'       the vertex shader. */',
 '    vec2 f=mix(r,s,uMorph);',
 '    f.y=f.y*uSSY+uSOY;',
 '    return f;',
@@ -1091,19 +807,9 @@ var mat=new THREE.ShaderMaterial({
   '  vec2 nrm=vec2(-dir.y,dir.x);',
   '  vec2 P=vec2(p0.x*uW.x*0.5, p0.y*uW.y*0.42);',
   '  float endFade=smoothstep(0.0,0.085,aT)*smoothstep(1.0,0.915,aT);',
-  '  /* A ledger tie is still a whole strand geometrically, running the upper',
-  '     rule, stepping down once and running the lower one to the edge. What it',
-  '     is not any more is inked along all of that. tieInk opens a window that',
-  '     travels the path, so the only part carrying ink is the segment currently',
-  '     in flight; the long horizontal runs either side of it are dark, which is',
-  '     why the rules read lighter and cleaner than they used to. Weighted by',
-  '     led so it only applies while the ledger is the shape on screen. */',
   '  float led=(uA==3?1.0-xfade(aLine):0.0)+(uB==3?xfade(aLine):0.0);',
   '  float aFade=endFade;',
   '  if(aLine>=RSPLIT) aFade*=mix(1.0,tieInk(tieG(aLine),aT),led*uMorph);',
-  '  /* The cursor is a breath on the water, not a finger in it: a bounded well',
-  '     that barely parts nearby strands. Zero at the exact centre and zero past',
-  '     the radius, so there is no singularity and no field-wide drag. */',
   '  vec2 mpos=vec2(uMouse.x*uW.x*0.5,uMouse.y*uW.y*0.5);',
   '  vec2 dm=P-mpos;',
   '  float dd=length(dm);',
@@ -1111,20 +817,11 @@ var mat=new THREE.ShaderMaterial({
   '  float fall=1.0-smoothstep(0.0,R,dd);',
   '  fall=fall*fall*(3.0-2.0*fall)*uPointer;',
   '  float wob=0.80+0.45*fract(sin(aLine*91.7)*43758.5453);',
-  '  /* strands taper to a point instead of ending in a cut rectangle */',
   '  float w=uWidth*wob*uWK*(1.0+uMorph*0.10)*(0.34+0.66*sqrt(endFade))*(1.0+fall*0.12);',
   '  P+=nrm*aSide*w;',
   '  P+=(dm/(dd+1e-4))*fall*smoothstep(0.0,R*0.30,dd)*R*0.00585;',
-  '  /* whole-field parallax, distinct from the well above: this slides every',
-  '     strand together with the cursor. Kept to a trace so the field feels',
-  '     anchored rather than dragged around by the pointer. */',
   '  P.x+=uMouse.x*0.0108; P.y+=uMouse.y*0.0072;',
   '  gl_Position=projectionMatrix*modelViewMatrix*vec4(P,0.0,1.0);',
-  '  /* Streaming, not breathing. The geometry holds perfectly still; what moves',
-  '     is the ink travelling along each strand. Neighbouring strands are pushed',
-  '     far out of phase by the aLine term, so a bundle keeps a near constant',
-  '     total weight while the fine strands inside it visibly run downstream:',
-  '     movement you read as flow rather than as the band changing shape. */',
   '  float stream=sin(aT*16.0-uTime*0.9+aLine*97.0);',
   '  vAlpha=aFade*uAlpha*(1.0+uStream*0.20*stream);',
   '  vLine=aLine; vT=aT;',
@@ -1134,8 +831,8 @@ var mat=new THREE.ShaderMaterial({
   'varying float vAlpha; varying float vLine; varying float vT;',
   'uniform float uMorph;',
   'void main(){',
-  '  vec3 deep=vec3(0.031,0.196,1.000);',   // #0832FF
-  '  vec3 light=vec3(0.325,0.514,1.000);',  // #5383FF
+  '  vec3 deep=vec3(0.031,0.196,1.000);',
+  '  vec3 light=vec3(0.325,0.514,1.000);',
   '  vec3 col=mix(deep,light,smoothstep(0.0,1.0,vLine)*0.75);',
   '  float a=mix(0.20,0.60,uMorph)*vAlpha;',
   '  gl_FragColor=vec4(col,a);',
@@ -1158,9 +855,6 @@ var colH=document.querySelector('#hero .col'),
     colC=document.querySelector('#contact .col');
 var COLS=[colH,colP,colI,colS,colT,colC];
 
-/* Layout is measured on resize and font-load, never inside the render loop.
-   Everything the frame needs is derived from scrollY against these cached
-   document-space offsets, so no frame forces a synchronous layout. */
 var M={top:[0,0,0,0,0,0],h:[0,0,0,0,0,0],docH:1};
 function measure(){
   var y=scrollY;
@@ -1178,15 +872,11 @@ function update(){
   var TK=mb?1.27:1.20, MK=mb?1.42:1.25;
   function crossTop(i){return Math.min(1,Math.max(0,(vh*TK-(M.top[i]-y))/(vh*0.65)));}
   function crossMid(i){return Math.min(1,Math.max(0,(vh*MK-(M.top[i]-y+M.h[i]*0.5))/(vh*0.65)));}
-  /* one continuous morph chain, with no pair-switch discontinuities.
-     transitions complete as content clears the header, before each rest */
   var mI=crossTop(2), mS=crossMid(3), mT=crossMid(4);
   T.mix=mI+mS+mT;
   T.cOut=mI;
   T.morph=Math.min(crossTop(1), 1-ss(0,1,crossTop(5)));
   T.narrow=0;
-  /* mobile: the water band is anchored to the active section's column:
-     it lives just above the text and scrolls with it, so they never overlap */
   if(mb){
     var best=0.20, bestD=1e9;
     for(var ci=0;ci<COLS.length;ci++){
@@ -1200,8 +890,6 @@ function update(){
 
 /* ---------- resize ---------- */
 function resize(){
-  /* a hidden or not-yet-laid-out tab reports 0, so never hand the camera a NaN
-     aspect it can't recover from */
   var w=innerWidth||document.documentElement.clientWidth||1,
       h=innerHeight||document.documentElement.clientHeight||1;
   renderer.setSize(w,h,false);
@@ -1211,18 +899,11 @@ function resize(){
   var narrow=w<900;
   if(narrow){U.uSSX.value=0.98;U.uSOX.value=0.0;U.uSSY.value=0.24;U.uSOY.value=0.79;}
   else {U.uSSX.value=0.405;U.uSOX.value=-0.445;U.uSSY.value=1.0;U.uSOY.value=0.0;U.uAlpha.value=1.0;}
-  /* uSSY squashes the band to a quarter height on mobile. That closes the gaps
-     BETWEEN strands without thinning the strands themselves, so wherever the
-     field fans out they fuse into one solid slab instead of reading as strands.
-     Scale the stroke by the same squash, and back up by how few strands share
-     the band, to hold the desktop ratio of ink to gap. */
   U.uWidth.value = (w<760 ? 0.0100 : 0.0092)
     * (narrow ? U.uSSY.value*(52/LINES) : 1);
 }
 addEventListener('resize',function(){resize();measure();}); resize();
 
-/* The cursor field only exists for a real pointing device, and it retreats
-   when the pointer leaves the window rather than freezing mid-bow. */
 var mx=0,my=0,pointerOn=0;
 addEventListener('pointermove',function(e){
   if(e.pointerType==='touch'||reduce) return;
@@ -1232,9 +913,6 @@ addEventListener('pointerleave',function(){pointerOn=0;},{passive:true});
 addEventListener('blur',function(){pointerOn=0;});
 
 /* ---------- loop ---------- */
-/* Every hand-off in the chain, and the character of its sweep. Stagger is how
-   much of the transition is spread across the strands; sweep 1 hands over from
-   the top down, which is how the ledger rules itself in beside the rows. */
 var CHAIN=[
   {a:1,b:5,stag:0.62,sweep:0},   /* canyon → marketplace : the gap converges on one venue */
   {a:5,b:3,stag:0.55,sweep:1},   /* marketplace → ledger : the venue rules itself into rows */
@@ -1257,8 +935,6 @@ function frame(){
   U.uA.value=link.a; U.uB.value=link.b;
   U.uStag.value=link.stag; U.uSweep.value=link.sweep;
   U.uMix.value=f;
-  /* stroke weight rides the same hand-off as the shapes, so the line thins into
-     the diagram and thickens back out of it without a step at the boundary */
   var fw=f*f*(3-2*f);
   U.uWK.value =SHAPE_W[link.a]  +(SHAPE_W[link.b]  -SHAPE_W[link.a])  *fw;
   U.uRip.value=SHAPE_RIP[link.a]+(SHAPE_RIP[link.b]-SHAPE_RIP[link.a])*fw;
@@ -1279,8 +955,6 @@ function frame(){
     U.uSOY.value=(1-2*bsc)/0.84;
     bandFade=ss(0.05,0.13,bsc)*(1-ss(0.45,0.72,bsc));
     U.uAlpha.value=1.2*bandFade;
-    /* keep the chart frame glued to the moving band, written only when the
-       band has actually moved, so a still screen costs no layout */
     var pt=((bsc-0.101)*100)-1.5;
     if(Math.abs(pt-lastPlotTop)>0.04){
       lastPlotTop=pt;
@@ -1297,26 +971,6 @@ function frame(){
 frame();
 
 /* ---------- section guide + gentle scroll magnet ---------- */
-/* Two curves, because the two jobs are different. A nav jump crosses ground the
-   reader did not travel, so it accelerates out and decelerates in; a
-   decelerate-only curve makes a long jump start with a lurch at full speed.
-   A magnet correction is the opposite job. The reader is parked just off an
-   anchor and is being HELD there by something, and a plain deceleration hides
-   that: it arrives and stops dead, which reads as the page having been
-   repositioned rather than released. So the correction is a rubber band.
-
-   An underdamped spring, written out rather than approximated: zero at the
-   start, zero velocity at the start, one small swing past the anchor, then it
-   settles. SPRW puts one and a half cycles across the window and SPRD is set
-   so that first swing carries about a twelfth of the distance past. That the
-   overshoot is a FRACTION is the whole point, because it scales itself: a
-   correction most of a section long sails a few pixels past and comes back,
-   while a nudge of six pixels overshoots half of one and simply settles. The
-   residual left at t=1 is under a thousandth of the travel, and the step below
-   writes the exact target on the last frame regardless.
-
-   The water is driven off scrollY like everything else, so the field springs
-   with the page for free rather than being animated alongside it. */
 function easeInOutQuint(x){return x<0.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;}
 var SPRW=3*Math.PI, SPRD=7.22;
 function easeOutSpring(x){
@@ -1328,26 +982,14 @@ function smoothScrollTo(target,duration){
   target=Math.max(0,Math.min(docH,target));
   var start=scrollY,dist=target-start,adist=Math.abs(dist);
   var far=adist>innerHeight*0.75, ease=far?easeInOutQuint:easeOutSpring;
-  /* the spring needs a little more room than the old glide did, or its return
-     swing is clipped by the end of the animation and reads as a stumble */
   if(duration==null) duration=reduce?0:(far
     ? Math.max(520,Math.min(920,360+0.34*adist))
     : Math.max(360,Math.min(640,300+2.0*adist)));
-  /* Touch reading is held in the hand and tracked with the eyes, so the same
-     travel wants a quarter longer than it does under a cursor. */
   if(innerWidth<900) duration*=1.25;
   if(scrollAnimId) cancelAnimationFrame(scrollAnimId);
   if(!duration||adist<1){ scrollTo({top:target,left:0,behavior:'auto'}); return; }
-  /* Every frame below writes an absolute position with behavior:'auto'. The
-     stylesheet sets scroll-behavior:smooth, and without that explicit 'auto'
-     each write would start its OWN smooth animation on top of the last: they
-     stack and fight, which is the per-frame stutter this used to hand off to
-     the browser to avoid. Neutralising it on the element too is belt and
-     braces, since a UA that ignores the option still cannot ignore this. */
   var de=document.documentElement, prevSB=de.style.scrollBehavior;
   de.style.scrollBehavior='auto';
-  /* held in a named restore so an interrupted animation puts it back too, and
-     never strands the page with smooth scrolling switched off */
   restoreSB=function(){ de.style.scrollBehavior=prevSB; restoreSB=null; };
   var t0=null;
   function step(ts){
@@ -1358,14 +1000,11 @@ function smoothScrollTo(target,duration){
     else{
       scrollAnimId=null;
       if(restoreSB) restoreSB();
-      /* cooldown: never let the magnet re-fire right after an eased scroll lands */
       autoSnap=true; setTimeout(function(){autoSnap=false;},360);
     }
   }
   scrollAnimId=requestAnimationFrame(step);
 }
-/* the reader always outranks the animation: any input hands scrolling straight
-   back, and the magnet stands down for a beat rather than re-grabbing them */
 ['wheel','touchstart','keydown'].forEach(function(ev){
   addEventListener(ev,function(){
     if(scrollAnimId){ cancelAnimationFrame(scrollAnimId); scrollAnimId=null;
@@ -1384,36 +1023,33 @@ function calcAnc(){
   var vh=innerHeight, mob=innerWidth<900;
   var cols=COLS;
   if(mob){
-    /* content-aware rest: short sections settle lower so the band+text block
-       reads centered; tall sections rest high so more content is visible */
     ANC=[0];
     for(var i=1;i<cols.length;i++){
       var chh=cols[i].getBoundingClientRect().height;
       if(chh>vh*0.62){
-        /* too tall to share the screen with the water band:
-           rest with the heading just under the nav, band scrolled away */
         ANC.push(topDoc(cols[i])-vh*0.16);
       } else {
         var extra=Math.max(0,vh*0.58-chh)/2;
         ANC.push(topDoc(cols[i])-vh*0.34-extra);
       }
     }
-    /* An anchor past the end of the document is unreachable: scrollTo clamps to
-       the bottom, so Next appears to do nothing and tapping again just repeats.
-       Clamp them into the scrollable range first, then mirror the CSS snap
-       points onto the clamped values so the two agree. */
     var maxY=Math.max(0,document.body.scrollHeight-vh);
     for(var c=0;c<ANC.length;c++) ANC[c]=Math.max(0,Math.min(maxY,ANC[c]));
     for(var j=0;j<secEls.length;j++){
       secEls[j].style.scrollMarginTop=(topDoc(secEls[j])-ANC[j])+'px';
     }
   } else {
-    ANC=[0,
-      topDoc(colP)+colP.getBoundingClientRect().height/2-vh*0.5,
-      topDoc(colI)+colI.getBoundingClientRect().height/2-vh*0.5,
-      topDoc(colS)+colS.getBoundingClientRect().height/2-vh*0.5,
-      topDoc(colT)+colT.getBoundingClientRect().height/2-vh*0.5,
-      topDoc(colC)+colC.getBoundingClientRect().height/2-vh*0.5];
+    /* A column taller than the viewport cannot be centred: centring it drives
+       its first line under the nav veil and its last rows into the bottom fade.
+       Those rest with the heading just below the nav instead and are read by
+       scrolling, the same rule mobile already applies. */
+    ANC=[0];
+    for(var i2=1;i2<cols.length;i2++){
+      var chd=cols[i2].getBoundingClientRect().height;
+      ANC.push(chd>vh*0.78
+        ? topDoc(cols[i2])-vh*0.14
+        : topDoc(cols[i2])+chd/2-vh*0.5);
+    }
     var maxD=Math.max(0,document.body.scrollHeight-vh);
     for(var d=0;d<ANC.length;d++) ANC[d]=Math.max(0,Math.min(maxD,ANC[d]));
     for(var k=0;k<secEls.length;k++) secEls[k].style.scrollMarginTop='';
@@ -1424,25 +1060,15 @@ setTimeout(calcAnc,900);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(calcAnc);
 var lastW=innerWidth,lastVH=innerHeight;
 addEventListener('resize',function(){
-  /* Mobile browsers fire resize every time the URL bar slides in or out. Acting
-     on that rewrites ANC and every scroll-snap point mid-gesture, and the snap
-     engine then settles on a different section than the one you were heading
-     for. Only a width change or a large height change is a real relayout. */
   var wChanged=innerWidth!==lastW, dh=Math.abs(innerHeight-lastVH);
   lastW=innerWidth;
   if(!wChanged&&dh<lastVH*0.25) return;
   lastVH=innerHeight;
   setTimeout(calcAnc,60);
 });
-/* a tab that loads in the background lays out at zero, so remeasure on the way in */
 addEventListener('visibilitychange',function(){
   if(!document.hidden){resize();calcAnc();}
 });
-/* Every in-page link goes through the same path: the wordmark, the nav links,
-   the Get in touch button and the guide dots. "Get in touch" was previously a
-   bare href="#contact" handled natively, so it got none of the anchor logic and
-   none of the snap release, and proximity snap could catch it mid-travel and
-   drop it between sections. */
 var SEC_ID=['hero','problem','intro','solution','leadership','contact'];
 [].slice.call(document.querySelectorAll('a[href^="#"]')).forEach(function(a){
   var i=SEC_ID.indexOf(a.getAttribute('href').slice(1));
@@ -1450,24 +1076,16 @@ var SEC_ID=['hero','problem','intro','solution','leadership','contact'];
   a.addEventListener('click',function(e){ e.preventDefault(); smoothScrollTo(ANC[i]); });
 });
 var nextBtn=document.getElementById('next'),guiAct=0;
-/* The first anchor far enough below us to be worth travelling to. Anything
-   within a tenth of a viewport counts as somewhere we already are, so Next
-   never re-targets the anchor we are sitting on. Returns -1 when there is
-   nowhere further to go, which is also what hides the button. */
 function nextAnchor(){
   var y=scrollY,gap=innerHeight*0.12;
   for(var i=0;i<ANC.length;i++){ if(ANC[i]>y+gap) return i; }
   return -1;
 }
 function setDots(){
-  /* nearest anchor, not "the last one we are past by a lead". The old lead
-     marked a section active a third of a viewport before it arrived. */
   var act=0,bd=1e9;
   for(var i=0;i<ANC.length;i++){var d=Math.abs(ANC[i]-scrollY); if(d<bd){bd=d;act=i;}}
   guiAct=act;
   for(var j=0;j<gdots.length;j++) gdots[j].classList.toggle('on',j===act);
-  /* off exactly when there is no reachable anchor left, rather than guessing
-     from the highlighted index */
   nextBtn.classList.toggle('off',nextAnchor()<0);
 }
 setDots();
@@ -1478,13 +1096,8 @@ nextBtn.addEventListener('click',function(){
 var snapT=null,autoSnap=false;
 addEventListener('scroll',function(){
   setDots();
-  /* mobile uses native CSS scroll-snap, no JS magnet */
   if(innerWidth<900||autoSnap||reduce||scrollAnimId) return;
   clearTimeout(snapT);
-  /* The timer is reset by every scroll event, so it only fires once the reader
-     has genuinely come to rest, trackpad momentum included. Then it corrects
-     to the NEAREST anchor, and only from close range: a reader parked between
-     two sections meant to be there. */
   snapT=setTimeout(function(){
     var vh=innerHeight,best=-1,bd=1e9;
     for(var i=0;i<ANC.length;i++){
@@ -1494,8 +1107,6 @@ addEventListener('scroll',function(){
     if(best<0||bd<=4||bd>vh*0.11) return;
     autoSnap=true;
     smoothScrollTo(ANC[best]);
-    /* must outlast the longest spring, or the guard drops while the band is
-       still returning and the magnet re-fires on its own overshoot */
     setTimeout(function(){autoSnap=false;},900);
   },180);
 },{passive:true});
