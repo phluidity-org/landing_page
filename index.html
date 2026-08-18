@@ -1,106 +1,1157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Phluidity — Private company equity, made liquid.</title>
-<meta name="description" content="Phluidity tokenizes private securities on secure blockchain infrastructure, making issuance, cap table management, and share transfers seamless.">
-<meta name="theme-color" content="#070C16">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="Phluidity — Private company equity, made liquid.">
-<meta property="og:description" content="Tokenized private securities on secure blockchain infrastructure. Issuance, cap table management, secondaries, lending, and AI-powered reporting.">
-<meta property="og:type" content="website">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phluidity: Private Market Liquidity, At Last</title>
+<meta name="description" content="Phluidity is the marketplace for private companies. Issue, sell, buy, borrow, lend." />
+<meta name="theme-color" content="#ffffff" id="tcol" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; background: #070C16; -webkit-font-smoothing: antialiased; }
-  a { color: #7FB0FF; text-decoration: none; }
-  a:hover { color: #FFFFFF; }
-  @keyframes phl-pulse { 0%,100% { opacity: 1 } 50% { opacity: .25 } }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important } }
+  :root{
+    --white:#ffffff;
+    --paper:#f6f8fb;
+    --ink:#05070a;
+    --ink-2:#3d4650;
+    --ink-3:#79838f;
+    --blue:#0b3cff;
+    --blue-2:#3d68ff;
+    --rule:#e2e7ee;
+    --rule-2:#cfd7e2;
+    --blue-h:#0630d6;
+    --on-blue:#ffffff;
+    /* the page colour as bare channels, so every veil, scrim and translucent
+       panel can be written once and follow the theme */
+    --veil:255,255,255;
+    --col:600px;
+    --mask-on:#000;
 
-  .phl-page { min-height:100vh;background:#070C16;color:#E8EDF5;font-family:Archivo,Helvetica,sans-serif;display:flex;flex-direction:column;position:relative;overflow:hidden }
-  .phl-arc { position:absolute;border-radius:50%;pointer-events:none }
-  .phl-head { position:relative;padding:30px 48px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid rgba(255,255,255,0.07) }
-  .phl-main { position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:96px 48px 72px;max-width:1180px;margin:0 auto;width:100%;box-sizing:border-box }
-  .phl-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.09);border-radius:8px;overflow:hidden }
-  .phl-cell { background:#0A101C;padding:24px 22px;display:flex;flex-direction:column;gap:9px }
-  .phl-foot { position:relative;padding:24px 48px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap }
+    --tk-brand:.30em;
+    --fs-lab-1:11px;   --tk-lab-1:.18em;
+    --fs-lab-2:10px;   --tk-lab-2:.22em;
+    --fs-lab-3:9px;    --tk-lab-3:.26em;
+    --fs-h-section:clamp(27px,3.35vw,47px);
+  }
+  /* ---------- dark ---------- */
+  /* The same system inverted, not a second one: one accent, near-black page,
+     near-white ink, hairlines a shade off the page. The blue lifts because
+     #0b3cff on a dark ground reads as a hole rather than an accent. */
+  html[data-theme="dark"]{
+    --white:#06080c;
+    --paper:#0d1219;
+    --ink:#eef1f6;
+    --ink-2:#a6b0bd;
+    --ink-3:#78828f;
+    --blue:#5b86ff;
+    --blue-h:#82a2ff;
+    --rule:#1a212c;
+    --rule-2:#2a3341;
+    --veil:6,8,12;
+    --on-blue:#04060a;
+  }
+  html[data-theme="dark"] .pface{filter:grayscale(1) contrast(.95) brightness(.88)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--white);color:var(--ink);
+    font-family:'Schibsted Grotesk',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+    font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  canvas#gl{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}
+  html{scroll-behavior:smooth}
+  .scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(90deg,rgba(var(--veil),0) 36%,rgba(var(--veil),.70) 52%,rgba(var(--veil),.95) 68%)}
+  @media(max-width:900px){
+    .scrim{display:none}
+  }
+  .viz{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0}
+  .plot{position:absolute;left:7%;right:52%;top:15%;bottom:19%;
+    border-left:1px solid var(--rule-2);border-bottom:1px solid var(--rule-2)}
+  .plot.p2{bottom:8%}
+  @media(max-width:900px){.plot{left:5%;right:5%;top:8%;bottom:70%}.lab,.gapline,.ytick,.ylab{display:none}}
+  .ytick{position:absolute;left:-10px;transform:translate(-100%,-50%);font-size:10px;letter-spacing:.06em;color:var(--ink-3)}
+  .ylab{position:absolute;left:-56px;top:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+  .vt{position:absolute;left:12px;top:-32px;font-size:var(--fs-lab-1);font-weight:600;
+    letter-spacing:var(--tk-lab-1);text-transform:uppercase;color:var(--ink-2)}
+  .lab{position:absolute;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;background:rgba(var(--veil),.88);padding:3px 7px}
+  .tick{position:absolute;bottom:-24px;font-size:10px;letter-spacing:.1em;color:var(--ink-3)}
+  .gapline{position:absolute;border-left:1px dashed var(--rule-2)}
+  main{position:relative;z-index:3}
 
-  @media (max-width: 900px) {
-    .phl-grid { grid-template-columns:repeat(2,1fr) }
-    .phl-main { padding:64px 28px 56px }
-    .phl-head { padding:22px 28px }
-    .phl-foot { padding:22px 28px }
-    .phl-tagline { display:none }
+  /* ---------- nav ---------- */
+  nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;
+    justify-content:space-between;padding:0 clamp(20px,4vw,52px);height:70px}
+
+  /* ---------- the top fade ---------- */
+  .topfade,.botfade{opacity:0;transition:opacity .45s ease}
+  body.moving .topfade,body.moving .botfade{opacity:1;transition:opacity .16s ease}
+  .topfade{position:fixed;top:0;left:0;right:0;height:190px;z-index:19;pointer-events:none}
+  .topfade i,.botfade i,.navveil i{position:absolute;inset:0;display:block}
+  .navveil{position:fixed;top:0;left:0;right:0;height:72px;z-index:19;pointer-events:none}
+  .navveil i{backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 34%,transparent 100%);
+            mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 34%,transparent 100%)}
+  .navveil::after{content:'';position:absolute;inset:0;
+    background:linear-gradient(to bottom,
+      rgba(var(--veil),.92) 0%,rgba(var(--veil),.78) 46%,
+      rgba(var(--veil),.34) 78%,rgba(var(--veil),0) 100%)}
+  .topfade i:nth-child(1){backdrop-filter:blur(0.5px);-webkit-backdrop-filter:blur(0.5px);
+    -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 60%,transparent 100%);
+            mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 60%,transparent 100%)}
+  .topfade i:nth-child(2){backdrop-filter:blur(1.2px);-webkit-backdrop-filter:blur(1.2px);
+    -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 42%,transparent 80%);
+            mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 42%,transparent 80%)}
+  .topfade i:nth-child(3){backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 26%,transparent 60%);
+            mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 26%,transparent 60%)}
+  .topfade i:nth-child(4){backdrop-filter:blur(6.5px);-webkit-backdrop-filter:blur(6.5px);
+    -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 12%,transparent 42%);
+            mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 12%,transparent 42%)}
+  .topfade i:nth-child(5){backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 24%);
+            mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 24%)}
+  .topfade::after{content:'';position:absolute;inset:0;
+    background:linear-gradient(to bottom,
+      rgba(var(--veil),.96) 0%,rgba(var(--veil),.93) 18%,rgba(var(--veil),.80) 34%,
+      rgba(var(--veil),.56) 52%,rgba(var(--veil),.28) 72%,rgba(var(--veil),.09) 87%,
+      rgba(var(--veil),0) 100%)}
+  .botfade{position:fixed;bottom:0;left:0;right:0;height:104px;z-index:19;pointer-events:none}
+  .botfade i:nth-child(1){backdrop-filter:blur(0.5px);-webkit-backdrop-filter:blur(0.5px);
+    -webkit-mask-image:linear-gradient(to top,var(--mask-on) 0%,var(--mask-on) 58%,transparent 100%);
+            mask-image:linear-gradient(to top,var(--mask-on) 0%,var(--mask-on) 58%,transparent 100%)}
+  .botfade i:nth-child(2){backdrop-filter:blur(1.6px);-webkit-backdrop-filter:blur(1.6px);
+    -webkit-mask-image:linear-gradient(to top,var(--mask-on) 0%,var(--mask-on) 32%,transparent 70%);
+            mask-image:linear-gradient(to top,var(--mask-on) 0%,var(--mask-on) 32%,transparent 70%)}
+  .botfade i:nth-child(3){backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+    -webkit-mask-image:linear-gradient(to top,var(--mask-on) 0%,transparent 36%);
+            mask-image:linear-gradient(to top,var(--mask-on) 0%,transparent 36%)}
+  .botfade::after{content:'';position:absolute;inset:0;
+    background:linear-gradient(to top,
+      rgba(var(--veil),.84) 0%,rgba(var(--veil),.60) 28%,rgba(var(--veil),.32) 54%,
+      rgba(var(--veil),.11) 78%,rgba(var(--veil),0) 100%)}
+  @media(max-width:900px){
+    .topfade{height:128px}
+    .botfade{height:76px}
+    .botfade i:nth-child(2){display:none}
+    .topfade i:nth-child(2),.topfade i:nth-child(4){display:none}
+    .topfade i:nth-child(3){backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+      -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 24%,transparent 62%);
+              mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 24%,transparent 62%)}
+    .topfade i:nth-child(5){backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+      -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%);
+              mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%)}
   }
-  @media (max-width: 560px) {
-    .phl-grid { grid-template-columns:1fr }
+  @media(prefers-reduced-transparency:reduce){
+    .topfade i,.botfade i,.navveil i{display:none}
+    .topfade::after{background:linear-gradient(to bottom,
+      var(--white) 0%,var(--white) 54%,rgba(var(--veil),0) 100%)}
+    .botfade::after{background:linear-gradient(to top,
+      var(--white) 0%,rgba(var(--veil),0) 100%)}
   }
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .topfade i,.botfade i,.navveil i{display:none}
+  }
+  .wordmark{font-size:15px;letter-spacing:var(--tk-brand);text-transform:uppercase;font-weight:500;
+    color:var(--ink);text-decoration:none;cursor:pointer;transition:opacity .3s}
+  .wordmark:hover{opacity:.72}
+  .wordmark b{color:var(--blue);font-weight:500}
+  .navlinks{display:flex;gap:clamp(16px,2.4vw,34px);align-items:center}
+  .navlinks a{color:var(--ink-2);text-decoration:none;font-size:var(--fs-lab-1);letter-spacing:var(--tk-lab-1);
+    text-transform:uppercase;font-weight:500;transition:color .3s}
+  .navlinks a:hover{color:var(--blue)}
+  @media(max-width:760px){.navlinks a:not(.cta){display:none}}
+  a.cta{background:var(--blue);color:var(--on-blue);padding:11px 18px;transition:background .3s}
+  a.cta:hover{background:var(--blue-h)}
+
+  /* ---------- layout ---------- */
+  section{position:relative;padding:0 clamp(20px,4vw,52px);display:flex;align-items:center}
+  .bank{width:100%;max-width:1340px;margin:0 auto;display:flex;justify-content:flex-end}
+  .col{width:100%;max-width:var(--col)}
+  @media(max-width:900px){.bank{justify-content:center}.col{max-width:none}}
+
+  .eyebrow{font-size:10.5px;letter-spacing:var(--tk-brand);text-transform:uppercase;color:var(--blue);
+    font-weight:600;display:flex;align-items:center;gap:12px;margin-bottom:26px}
+  .eyebrow::before{content:'';width:22px;height:2px;background:var(--blue)}
+  h1,h2,h3{font-weight:400;line-height:1.07;letter-spacing:-.03em}
+
+  /* ---------- hero ---------- */
+  #hero{min-height:100svh;padding-top:70px}
+  #hero h1{font-size:clamp(38px,5.2vw,72px)}
+  #hero h1 span{display:block;color:var(--blue)}
+  .verbs{display:flex;flex-wrap:wrap;margin-top:36px;border-top:1px solid var(--rule-2)}
+  .verbs span{font-size:var(--fs-lab-1);letter-spacing:var(--tk-lab-1);text-transform:uppercase;font-weight:500;
+    color:var(--ink-2);padding:15px 0;flex:1 1 0;min-width:56px}
+  .settle{margin-top:24px;font-size:clamp(14px,1.1vw,16px);line-height:1.65;color:var(--ink-2);max-width:46ch}
+  .settle b{color:var(--ink);font-weight:600}
+
+  /* ---------- problem ---------- */
+  #problem{min-height:110svh;padding-top:10svh;padding-bottom:10svh}
+  #problem h2{font-size:var(--fs-h-section);line-height:1.15}
+  #problem h2 em{font-style:normal;color:var(--blue)}
+  .body{font-size:clamp(15px,1.15vw,17px);line-height:1.72;color:var(--ink-2);margin-top:24px;max-width:68ch}
+  .body + .body{margin-top:18px}
+  .body b{color:var(--ink);font-weight:500}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:48px;
+    border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
+  .stat{padding:22px 20px 24px 0}
+  .stat + .stat{padding-left:20px;border-left:1px solid var(--rule)}
+  .stat b{display:block;font-size:clamp(26px,2.9vw,38px);font-weight:400;letter-spacing:-.035em;line-height:1}
+  .stat b i{font-style:normal;font-size:.38em;letter-spacing:.08em;color:var(--ink-3);font-weight:500}
+  .stat span{display:block;margin-top:10px;font-size:11px;line-height:1.5;color:var(--ink-3)}
+  .stat span + span{margin-top:6px}
+  .stat .hl{color:var(--blue);font-style:normal}
+  @media(max-width:620px){.stats{grid-template-columns:1fr}
+    .stat+.stat{padding-left:0;border-left:0;border-top:1px solid var(--rule)}}
+
+  /* ---------- intro ---------- */
+  #intro{min-height:95svh;padding-top:10svh;padding-bottom:10svh}
+  #intro h2{font-size:clamp(29px,3.8vw,54px)}
+  #intro h2 em{font-style:normal;color:var(--blue)}
+  .register{margin-top:26px;border-top:2px solid var(--ink);max-width:68ch}
+  .rlab{padding:5px 0 6px;border-bottom:1px solid var(--rule);
+    font-size:var(--fs-lab-3);letter-spacing:var(--tk-lab-3);text-transform:uppercase;
+    font-weight:600;color:var(--ink-3)}
+  .reg{display:grid;grid-template-columns:1fr 1.5fr;gap:22px;padding:8px 0;
+    border-bottom:1px solid var(--rule);align-items:baseline}
+  .reg .k{color:var(--ink);font-size:clamp(13px,1vw,15px);font-weight:500;letter-spacing:-.01em}
+  .reg .v{color:var(--ink-3);font-size:clamp(11.5px,.84vw,12.5px);line-height:1.4}
+  @media(max-width:640px){.reg{grid-template-columns:1fr;gap:5px}}
+
+  #intro .body{margin-top:18px}
+  #intro .body + .body{margin-top:15px}
+  /* ---------- solution ---------- */
+  #solution{min-height:100svh;padding-top:8svh;padding-bottom:4svh}
+  #solution h2{font-size:clamp(23px,2.7vw,36px)}
+  #solution h2 em{font-style:normal;color:var(--blue)}
+  .sub{font-size:clamp(13px,1vw,14.5px);line-height:1.55;color:var(--ink-2);margin-top:10px;max-width:54ch}
+  .ledger{margin-top:16px;border-top:2px solid var(--ink)}
+  .lhead{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;padding:6px 0;border-bottom:1px solid var(--rule)}
+  .lhead span{font-size:var(--fs-lab-3);letter-spacing:var(--tk-lab-3);text-transform:uppercase;font-weight:600;color:var(--ink-3)}
+  .lhead span:last-child{color:var(--blue)}
+  .row{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;padding:6.5px 0;
+    border-bottom:1px solid var(--rule);align-items:baseline}
+  .js .row{opacity:0;transform:translateY(12px);
+    transition:opacity .62s cubic-bezier(.16,1,.3,1),transform .62s cubic-bezier(.16,1,.3,1)}
+  .js .row.in{opacity:1;transform:none}
+  .row .a{color:var(--ink-3);font-size:clamp(11.5px,.84vw,12.5px);line-height:1.35}
+  .row .b{color:var(--ink);font-size:clamp(12px,.9vw,13.5px);line-height:1.35;font-weight:500}
+  @media(max-width:640px){.lhead{grid-template-columns:1fr}.lhead span:last-child{display:none}
+    .row{grid-template-columns:1fr;gap:7px}}
+  .foot{margin-top:20px;font-size:clamp(15px,1.5vw,19px);letter-spacing:-.02em;color:var(--ink)}
+  .foot em{font-style:normal;color:var(--blue)}
+
+  /* ---------- leadership ---------- */
+  #leadership{min-height:95svh;padding-top:10svh;padding-bottom:10svh}
+  #leadership h2{font-size:var(--fs-h-section)}
+  .lsub{color:var(--ink-2);font-size:clamp(15px,1.15vw,17px);line-height:1.6;margin-top:22px;max-width:48ch}
+  .team{margin-top:48px;border-top:2px solid var(--ink)}
+  .person{position:relative;display:grid;grid-template-columns:1fr auto;gap:0 16px;align-items:baseline;
+    padding:18px 0;border-bottom:1px solid var(--rule)}
+  .person h3{font-size:clamp(18px,1.6vw,23px);font-weight:400;letter-spacing:-.025em}
+  .person>p{font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);text-transform:uppercase;color:var(--blue);
+    font-weight:600;text-align:right}
+
+  .ptoggle{font:inherit;letter-spacing:inherit;color:inherit;
+    text-align:left;cursor:default}
+  .ptoggle::before{content:'';position:absolute;inset:0}
+  .ptoggle:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
+
+  .team{position:relative}
+  .person:hover,.person:is(:has(.ptoggle:focus-visible)){z-index:5}
+  .pbio{position:absolute;z-index:5;left:0;right:0;top:calc(100% - 5px);
+    background:rgba(var(--veil),.92);backdrop-filter:blur(14px);
+    border:1px solid var(--rule);padding:18px 20px;
+    opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);
+    transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1),
+      visibility 0s .3s}
+  .pbio>div{display:flex;gap:18px;align-items:flex-start}
+  .pface{width:84px;height:84px;flex:none;border-radius:50%;object-fit:cover;
+    filter:grayscale(1) contrast(1.03)}
+  .pface-soon{display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--rule-2);color:var(--ink-3);
+    font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);font-weight:600}
+  .ptext{font-size:13px;line-height:1.62;color:var(--ink-2)}
+  .person:hover .pbio,.person:is(:has(.ptoggle:focus-visible)) .pbio{
+    opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s,0s,0s}
+  @media(hover:none){
+    .person:focus-within{z-index:5}
+    .person:focus-within .pbio{
+      opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s,0s,0s}
+  }
+  @media(min-width:1120px){
+    .pbio{left:auto;right:100%;top:50%;bottom:auto;width:326px;margin-right:26px;
+      transform:translateY(-50%) translateX(-6px)}
+    .person:hover .pbio,.person:is(:has(.ptoggle:focus-visible)) .pbio{
+      transform:translateY(-50%)}
+    .pbio>div{flex-direction:column;gap:14px}
+    .pface{width:96px;height:96px}
+  }
+  @media(min-width:1120px) and (hover:none){
+    .person:focus-within .pbio{transform:translateY(-50%)}
+  }
+  @media(max-width:560px){.person{grid-template-columns:1fr}.person>p{text-align:left}
+    .pbio{padding:15px 16px}.pface{width:70px;height:70px}
+    .pbio>div{gap:14px}.ptext{font-size:12.5px}}
+
+  /* ---------- contact ---------- */
+  #contact{min-height:100svh;padding-top:12svh}
+  #contact .col{display:flex;flex-direction:column}
+  #contact h2{font-size:clamp(30px,4.4vw,62px)}
+  .soon{align-self:flex-start;margin-top:16px;font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);
+    text-transform:uppercase;font-weight:600;color:var(--blue);border:1px solid var(--blue);
+    border-radius:20px;padding:6px 14px}
+  .mail{align-self:flex-start;margin-top:30px;font-size:clamp(18px,2.1vw,30px);max-width:100%;
+    letter-spacing:-.025em;color:var(--blue);text-decoration:none;font-weight:400;
+    border-bottom:2px solid var(--blue);padding-bottom:5px;transition:.35s}
+  .mail:hover{color:var(--blue-h);border-bottom-color:var(--blue-h)}
+  .libtn{align-self:flex-start;margin-top:30px;display:inline-flex;align-items:center;gap:14px;
+    background:var(--blue);color:var(--on-blue);text-decoration:none;padding:16px 22px;
+    font-size:var(--fs-lab-1);letter-spacing:var(--tk-lab-1);text-transform:uppercase;font-weight:500;
+    transition:background .3s}
+  .libtn:hover{background:var(--blue-h)}
+  .libtn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  .libtn svg{width:13px;height:13px;display:block;flex:none;
+    transition:transform .35s cubic-bezier(.16,1,.3,1)}
+  .libtn:hover svg{transform:translate(2px,-2px)}
+  .note{margin-top:34px;color:var(--ink-3);font-size:12.5px;line-height:1.6;max-width:44ch}
+  footer{margin-top:12svh;border-top:1px solid var(--rule);padding:20px 0;display:flex;
+    justify-content:space-between;gap:14px;flex-wrap:wrap;
+    font-size:var(--fs-lab-2);letter-spacing:var(--tk-lab-2);text-transform:uppercase;color:var(--ink-3);font-weight:500}
+  footer a{color:var(--ink-3);text-decoration:none;transition:color .3s}
+  footer a:hover{color:var(--blue)}
+
+  .next{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:21;
+    width:36px;height:36px;border:1px solid var(--rule-2);border-radius:50%;
+    background:rgba(var(--veil),.85);backdrop-filter:blur(6px);color:var(--ink-2);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:opacity .4s,border-color .3s,color .3s;padding:0}
+  .next:hover{border-color:var(--blue);color:var(--blue)}
+  .next:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  .next.off{opacity:0;pointer-events:none}
+  .next svg{width:13px;height:13px;display:block;
+    transition:transform .4s cubic-bezier(.16,1,.3,1)}
+  .next:hover svg{transform:translateY(2px)}
+
+  .guide{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:21;
+    display:flex;flex-direction:column;gap:10px;align-items:center}
+  .guide a{width:6px;height:6px;display:block;position:relative}
+  .guide a::before{content:'';position:absolute;inset:0;border-radius:3px;
+    background:var(--rule-2);
+    transition:background .3s,top .42s cubic-bezier(.16,1,.3,1),
+      bottom .42s cubic-bezier(.16,1,.3,1)}
+  .guide a:hover::before{background:var(--ink-3)}
+  .guide a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
+  .guide a.on::before{background:var(--blue);top:-4px;bottom:-4px}
+  @media(max-width:900px){.guide{display:none}}
+
+  .js .rv{opacity:0;transform:translateY(18px);
+    transition:opacity .72s cubic-bezier(.16,1,.3,1),transform .72s cubic-bezier(.16,1,.3,1)}
+  .js .rv.in{opacity:1;transform:none}
+  @media(max-width:900px){
+    :root{--fs-lab-1:10px;--fs-lab-2:9px;--fs-lab-3:8.5px;--fs-h-section:22px}
+    section{align-items:flex-start;min-height:100svh;scroll-snap-align:start}
+    #hero{padding-top:36svh;min-height:100svh}
+    #hero h1{font-size:clamp(30px,8.6vw,38px)}
+    .verbs{margin-top:22px}
+    .verbs span{padding:10px 0;min-width:0;flex:1 1 auto;margin-right:14px}
+    .settle{margin-top:16px;font-size:13px}
+    #problem,#intro,#solution,#leadership{min-height:auto;padding-top:30svh;padding-bottom:20svh}
+    #contact{padding-top:30svh;min-height:100svh}
+    .eyebrow{margin-bottom:14px}
+    .body{font-size:13px;line-height:1.55;margin-top:12px}
+    .body + .body{margin-top:10px}
+    .stats{margin-top:18px;grid-template-columns:repeat(3,1fr)}
+    .stat{padding:10px 8px 12px 0}
+    .stat + .stat{padding-left:10px;border-left:1px solid var(--rule);border-top:0}
+    .stat b{font-size:19px}
+    .stat span{font-size:8.5px;margin-top:6px;line-height:1.45}
+    #intro h2{font-size:24px}
+    .register{margin-top:16px}
+    .reg{padding:8px 0;gap:10px}
+    .reg .k{font-size:12px}
+    .reg .v{font-size:10.5px}
+    #solution h2{font-size:21px}
+    .sub{font-size:12.5px;margin-top:10px}
+    .ledger{margin-top:14px}
+    .lhead{grid-template-columns:1fr 1.2fr;gap:10px}
+    .lhead span:last-child{display:block}
+    .row{grid-template-columns:1fr 1.2fr;gap:10px;padding:6px 0}
+    .row .a{font-size:10.5px}
+    .row .b{font-size:11px}
+    .foot{margin-top:12px;font-size:13px}
+    .lsub{font-size:13px;margin-top:12px}
+    .team{margin-top:16px}
+    .person{padding:9px 0;grid-template-columns:1fr auto}
+    .person h3{font-size:15px}
+    .person>p{text-align:right}
+    #contact h2{font-size:28px}
+    .libtn{margin-top:20px;padding:14px 18px}
+    .note{font-size:11.5px;margin-top:18px}
+    footer{margin-top:6svh}
+    .next{bottom:12px;width:32px;height:32px}
+    .vt{left:8px;top:6px;font-size:8.5px;letter-spacing:var(--tk-lab-3)}
+    .plot .tick{bottom:5px;font-size:9px}
+    .plot .tick[style*="left:-6px"]{left:8px!important}
+    .plot .tick[style*="right:0"]{right:8px!important}
+  }
+  @media(prefers-reduced-motion:reduce){.rv,.row{opacity:1!important;transform:none!important}
+    html{scroll-behavior:auto}
+    .pbio{transition:opacity .01s!important;transform:none!important}}
 </style>
+<script>
+(function(){
+  var d=document.documentElement;
+  d.className+=' js';
+  /* Resolved before first paint, so the page never flashes the wrong ground.
+     The system preference is the only input, and it keeps applying: a machine
+     that switches theme mid-session switches the page with it. */
+  var sys=matchMedia('(prefers-color-scheme: dark)');
+  d.setAttribute('data-theme',sys.matches?'dark':'light');
+  if(sys.addEventListener) sys.addEventListener('change',function(e){
+    document.dispatchEvent(new CustomEvent('settheme',{detail:e.matches?'dark':'light'}));
+  });
+})();
+</script>
 </head>
 <body>
-<div class="phl-page">
+<canvas id="gl"></canvas>
+<div class="scrim"></div>
 
-  <div class="phl-arc" style="top:-560px;left:-380px;width:1500px;height:1500px;border:1px solid rgba(120,170,255,0.10)"></div>
-  <div class="phl-arc" style="top:-460px;left:-280px;width:1300px;height:1300px;border:1px solid rgba(120,170,255,0.08)"></div>
-  <div class="phl-arc" style="top:-360px;left:-180px;width:1100px;height:1100px;border:1px solid rgba(120,170,255,0.06)"></div>
-  <div class="phl-arc" style="top:-200px;left:-120px;width:900px;height:900px;border-radius:0;background:radial-gradient(closest-side, rgba(37,99,235,0.22), rgba(7,12,22,0))"></div>
+<div class="viz" id="viz1" aria-hidden="true"><div class="plot">
+  <span class="vt">Private-company value over time</span>
+  <span class="ylab">Implied value, $tn</span>
+  <span class="ytick" style="top:14%">$4</span>
+  <span class="ytick" style="top:35%">$3</span>
+  <span class="ytick" style="top:56%">$2</span>
+  <span class="ytick" style="top:77%">$1</span>
+  <span class="lab" style="right:1.5%;top:10%;color:#3d68ff">Paper value</span>
+  <span class="lab" style="right:1.5%;top:83%;color:#0b3cff">Realized gains</span>
+  <span class="gapline" style="right:9%;top:26%;height:54%"></span>
+  <span class="lab" style="right:10.5%;top:51%;color:#79838f">The canyon</span>
+  <span class="tick" style="left:-6px">2015</span>
+  <span class="tick" style="left:48%">2020</span>
+  <span class="tick" style="right:0">2025</span>
+</div></div>
 
-  <header class="phl-head">
-    <div style="display:flex;align-items:center;gap:14px">
-      <div style="display:grid;grid-template-columns:repeat(4,6px);gap:4px" aria-hidden="true">
-        <div style="width:6px;height:6px;background:#3A4048"></div><div style="width:6px;height:6px;background:#3A4048"></div><div style="width:6px;height:6px;background:#5B9BFF;animation:phl-pulse 3.2s ease-in-out infinite"></div><div style="width:6px;height:6px;background:#3A4048"></div>
-        <div style="width:6px;height:6px;background:#3A4048"></div><div style="width:6px;height:6px;background:#FFFFFF"></div><div style="width:6px;height:6px;background:#3A4048"></div><div style="width:6px;height:6px;background:#3A4048"></div>
-        <div style="width:6px;height:6px;background:#3A4048"></div><div style="width:6px;height:6px;background:#3A4048"></div><div style="width:6px;height:6px;background:#3A4048"></div><div style="width:6px;height:6px;background:#FFFFFF"></div>
-      </div>
-      <div style="font:500 25px/1 Archivo;letter-spacing:-0.01em;color:#FFFFFF">Phluidity</div>
-    </div>
-    <div class="phl-tagline" style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em;text-transform:uppercase;color:#7C8899">Private markets infrastructure</div>
-  </header>
+<button class="next" id="next" aria-label="Next section" type="button">
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
 
-  <main class="phl-main">
-    <div style="display:inline-flex;align-items:center;gap:9px;padding:7px 14px;border:1px solid rgba(255,255,255,0.14);border-radius:99px;align-self:flex-start;margin-bottom:34px">
-      <div style="width:6px;height:6px;border-radius:50%;background:#4D8CFF;animation:phl-pulse 2.4s ease-in-out infinite"></div>
-      <div style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;text-transform:uppercase;color:#B9C6D8">Coming soon — 2026</div>
-    </div>
-
-    <h1 style="margin:0 0 18px;font:600 clamp(36px,4.2vw,58px)/1.05 Archivo;letter-spacing:-0.035em;color:#FFFFFF;max-width:720px;text-wrap:balance">Private company equity, made liquid.</h1>
-
-    <p style="margin:0 0 56px;font:400 16px/1.5 Archivo;color:#A0AEC2;max-width:560px;text-wrap:pretty">Phluidity tokenizes private securities on secure blockchain infrastructure, making issuance, cap table management, and share transfers seamless. This opens the door to secondary trades, equity-backed loans, and AI-powered reporting, while keeping control with the companies we serve.</p>
-
-    <div class="phl-grid">
-      <div class="phl-cell">
-        <div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em;color:#4D8CFF">01</div>
-        <div style="font:500 15px/1.3 Archivo;color:#FFFFFF">Issuance &amp; cap table</div>
-        <div style="font:400 13px/1.5 Archivo;color:#8B99AC">Tokenized share issuance with seamless transfers and process support.</div>
-      </div>
-      <div class="phl-cell">
-        <div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em;color:#4D8CFF">02</div>
-        <div style="font:500 15px/1.3 Archivo;color:#FFFFFF">Ownership verification</div>
-        <div style="font:400 13px/1.5 Archivo;color:#8B99AC">Enhanced information and equity ownership verified on-chain.</div>
-      </div>
-      <div class="phl-cell">
-        <div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em;color:#4D8CFF">03</div>
-        <div style="font:500 15px/1.3 Archivo;color:#FFFFFF">Secondaries &amp; lending</div>
-        <div style="font:400 13px/1.5 Archivo;color:#8B99AC">Secondary trades and equity-backed loans against private positions.</div>
-      </div>
-      <div class="phl-cell">
-        <div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em;color:#4D8CFF">04</div>
-        <div style="font:500 15px/1.3 Archivo;color:#FFFFFF">AI-powered reporting</div>
-        <div style="font:400 13px/1.5 Archivo;color:#8B99AC">Reporting generated from cryptographically secure records.</div>
-      </div>
-    </div>
-  </main>
-
-  <footer class="phl-foot">
-    <div style="font:400 11px/1 'IBM Plex Mono',monospace;letter-spacing:0.1em;color:#6B7889">© 2026 PHLUIDITY, INC.</div>
-    <div style="display:flex;gap:24px;align-items:center">
-      <!-- <a href="mailto:hello@phluidity.com" style="font:400 12px/1 Archivo">hello@phluidity.com</a> -->
-      <a href="http://linkedin.com/company/phluidity" style="font:400 12px/1 Archivo">LinkedIn</a>
-    </div>
-  </footer>
+<div class="guide" id="guide" aria-label="Sections">
+  <a href="#hero" title="Top" aria-label="Top"></a>
+  <a href="#problem" title="The problem" aria-label="The problem"></a>
+  <a href="#intro" title="Phluidity" aria-label="Phluidity"></a>
+  <a href="#solution" title="The platform" aria-label="The platform"></a>
+  <a href="#leadership" title="Team" aria-label="Team"></a>
+  <a href="#contact" title="Get in touch" aria-label="Get in touch"></a>
 </div>
+
+<nav id="nav">
+  <a class="wordmark" id="logo" href="#hero" aria-label="Phluidity, back to top">Ph<b>l</b>uidity</a>
+  <div class="navlinks">
+    <a href="#problem">Problem</a><a href="#intro">Platform</a><a href="#leadership">Team</a>
+    <a class="cta" href="#contact">Get in touch</a>
+  </div>
+</nav>
+<div class="navveil" aria-hidden="true"><i></i></div>
+<div class="topfade" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="botfade" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<main>
+  <section id="hero"><div class="bank"><div class="col">
+    <div class="eyebrow rv">Phluidity</div>
+    <h1 class="rv">Private Market Liquidity,<span>At Last.</span></h1>
+    <div class="verbs rv"><span>Issue</span><span>Sell</span><span>Buy</span><span>Borrow</span><span>Lend</span></div>
+    <p class="settle rv">All with <b>blockchain-enabled instant settlement</b>, free of counterparty risk.</p>
+  </div></div></section>
+
+  <section id="problem"><div class="bank"><div class="col">
+    <div class="eyebrow rv">The Problem</div>
+    <h2 class="rv">Valuations have grown.<br><em>Realized gains</em> have not.</h2>
+    <p class="body rv">Companies are staying private longer than ever, and a canyon has opened
+      between what shares are worth on paper and what holders can actually realize.</p>
+    <p class="body rv">Secondary sales have become the market's release valve: vital, and woefully
+      inadequate. Trades are opaque, episodic, expensive, and slow. For all but a handful of
+      names, liquidity is effectively zero.</p>
+    <div class="stats rv">
+      <div class="stat"><b>12.2<i> YRS</i></b><span>Average age of a venture-backed company, up from 9.4 five years ago</span></div>
+      <div class="stat"><b>13<i> % CAGR</i></b><span>Annual growth in global VC secondary volume. <i class="hl">86% concentrated in 20 names</i></span></div>
+      <div class="stat"><b>$4<i> TN</i></b><span>Value of mid- and late-stage private companies, up from $0.8tn in 2018</span></div>
+    </div>
+  </div></div></section>
+
+  <section id="intro"><div class="bank"><div class="col">
+    <div class="eyebrow rv">Introducing Phluidity</div>
+    <h2 class="rv">Phluidity: The Marketplace<br>for <em>Private Companies</em>.</h2>
+    <p class="body rv">Phluidity's <b>blockchain-powered financial infrastructure</b> is designed to increase
+      liquidity for private companies and their shareholders. Our platform facilitates share issuance,
+      process management support, and enhanced information and equity ownership verification.</p>
+    <p class="body rv">These capabilities support secondary trades, equity-backed loans, and AI-powered
+      reporting through cryptographically secure on-chain infrastructure. Through tokenization, we make
+      cap table management and share transfers seamless while <b>providing control to the companies we
+      serve</b>.</p>
+  </div></div></section>
+
+  <section id="solution"><div class="bank"><div class="col">
+    <div class="eyebrow rv">The Solution</div>
+    <h2 class="rv">The same trade,<br>with <em>Phluidity</em>.</h2>
+    <p class="sub rv">A liquid, accessible marketplace to buy, sell, or borrow against tokenized ownership
+      interests. The same trade, opened to a wider universe of parties, with every friction removed.</p>
+    <div class="ledger">
+      <div class="lhead"><span>Today</span><span>With Phluidity</span></div>
+      <div class="row"><div class="a">No centralized marketplace</div><div class="b">One central bid / ask marketplace</div></div>
+      <div class="row"><div class="a">Little information or transparency</div><div class="b">Live price discovery, with AI-powered reporting on every listed asset</div></div>
+      <div class="row"><div class="a">Layered ownership obscures fraud</div><div class="b">Immutable on-chain ownership, verifiable at the source</div></div>
+      <div class="row"><div class="a">ROFRs stall every transfer</div><div class="b">ROFR preprogrammed into the token, and handled automatically at transaction</div></div>
+      <div class="row"><div class="a">Settlement takes 30 to 90 days</div><div class="b">Instant, atomic settlement with zero execution risk</div></div>
+      <div class="row"><div class="a">Borrowing against private equity shares is rare and bespoke</div><div class="b">An open borrow / lend market where the borrower chooses among available offers, cash or PIK</div></div>
+      <div class="row"><div class="a">Cap tables are reconciled by hand, and transfers take months</div><div class="b">Tokenized cap table management, with share transfers the company controls</div></div>
+      <div class="row"><div class="a">Primary issuance requires banks, lawyers, and months</div><div class="b">Seamless primary issuance, with the click of a button</div></div>
+      <div class="row"><div class="a">Legal documentation is slow, manual, and expensive</div><div class="b">Automated legal document generation</div></div>
+    </div>
+    <p class="foot rv">Liquidity, on the equity holder's <em>own</em> timeframe and terms.</p>
+  </div></div></section>
+
+  <section id="leadership"><div class="bank"><div class="col">
+    <div class="eyebrow rv">Leadership</div>
+    <h2 class="rv">Built by operators of the private market.</h2>
+    <p class="lsub rv">Deep venture and institutional relationships, regulated-issuance expertise, and core
+      infrastructure that is built, tested, and ready to deploy.</p>
+    <div class="team">
+      <div class="person rv">
+        <h3><span class="ptoggle" tabindex="0" aria-describedby="bio-loeb-m">Michael Loeb</span></h3>
+        <p>Co-founder, Co-CEO</p>
+        <div class="pbio" role="tooltip" id="bio-loeb-m"><div>
+          <img class="pface" data-src="img/loeb-m.jpg" alt="" width="320" height="320" decoding="async">
+          <p class="ptext">Michael has built five unicorns from the ground up and has transacted with most major venture funds. He also founded the Uncharted Network, now some 3,500 members strong.</p>
+        </div></div>
+      </div>
+      <div class="person rv">
+        <h3><span class="ptoggle" tabindex="0" aria-describedby="bio-loeb-h">Harlan Peltz</span></h3>
+        <p>Co-founder, Co-CEO</p>
+        <div class="pbio" role="tooltip" id="bio-loeb-h"><div>
+          <img class="pface" data-src="img/loeb-h.jpg" alt="" width="320" height="320" decoding="async">
+          <p class="ptext">Harlan co-founded Profitr and has spent decades in private lending and hedge funds. He grew iBorrow into a leading commercial real estate lender, originating over $2B.</p>
+        </div></div>
+      </div>
+      <div class="person rv">
+        <h3><span class="ptoggle" tabindex="0" aria-describedby="bio-epstein">Ian Epstein</span></h3>
+        <p>Co-founder</p>
+        <div class="pbio" role="tooltip" id="bio-epstein"><div>
+          <img class="pface" data-src="img/epstein.jpg" alt="" width="320" height="320" decoding="async">
+          <p class="ptext">Ian co-founded Profitr, whose technical stack Phluidity is built on. He led the capital markets team at Republic, and brings deep expertise in on-chain capital management.</p>
+        </div></div>
+      </div>
+      <div class="person rv">
+        <h3><span class="ptoggle" tabindex="0" aria-describedby="bio-vogel">Rich Vogel</span></h3>
+        <p>Co-founder</p>
+        <div class="pbio" role="tooltip" id="bio-vogel"><div>
+          <img class="pface" data-src="img/vogel.jpg" alt="" width="320" height="320" decoding="async">
+          <p class="ptext">Rich is a founding partner and the CFO and COO of Loeb.nyc, where across 35 years he has been instrumental in founding and nurturing several hundred start-ups.</p>
+        </div></div>
+      </div>
+      <div class="person rv">
+        <h3><span class="ptoggle" tabindex="0" aria-describedby="bio-benoit">Seb Benoit</span></h3>
+        <p>CTO</p>
+        <div class="pbio" role="tooltip" id="bio-benoit"><div>
+          <img class="pface" data-src="img/benoit.jpg" alt="" width="320" height="320" decoding="async">
+          <p class="ptext">Seb leads technology strategy and architecture. He has built systems across aerospace, renewable energy, AI, and most recently core protocol and identity infrastructure for the Celo blockchain.</p>
+        </div></div>
+      </div>
+      <div class="person rv">
+        <h3><span class="ptoggle" tabindex="0" aria-describedby="bio-peltz-a">Aaron Peltz</span></h3>
+        <p>Business Development</p>
+        <div class="pbio" role="tooltip" id="bio-peltz-a"><div>
+          <img class="pface" data-src="img/aaron.jpg" alt="" width="320" height="320" decoding="async">
+          <p class="ptext">Aaron joined Phluidity after graduating from Brown, following internships at Republic and Loeb.nyc, where he focused on the portfolio company Shoplift.</p>
+        </div></div>
+      </div>
+    </div>
+  </div></div></section>
+
+  <section id="contact"><div class="bank"><div class="col">
+    <div class="eyebrow rv">Get in touch</div>
+    <h2 class="rv">Let's unblock the flow.</h2>
+    <span class="soon rv">Platform: Coming Soon</span>
+    <a class="libtn rv" href="https://linkedin.com/company/phluidity" target="_blank" rel="noopener noreferrer">Contact us on LinkedIn<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 11L11 5M11 5H6M11 5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <p class="note rv">For investor materials, platform access, or partnership enquiries. Phluidity Inc., New York.</p>
+    <footer><span>© 2026 Phluidity Inc.</span></footer>
+  </div></div></section>
+</main>
+
+<script src="vendor/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ---------- reveals / nav ---------- */
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},
+  {threshold:.15,rootMargin:'0px 0px -6% 0px'});
+document.querySelectorAll('section').forEach(function(s){
+  s.querySelectorAll('.rv').forEach(function(el,i){
+    el.style.transitionDelay=Math.min(i*70,280)+'ms'; io.observe(el);});
+});
+document.querySelectorAll('.row').forEach(function(el,i){
+  el.style.transitionDelay=Math.min(i*52,380)+'ms'; io.observe(el);});
+addEventListener('keydown',function(e){
+  if(e.key==='Escape' && document.activeElement) document.activeElement.blur();
+});
+var teamEl=document.querySelector('.team');
+if(teamEl){
+  var faceIO=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      e.target.querySelectorAll('img[data-src]').forEach(function(im){
+        im.src=im.getAttribute('data-src'); im.removeAttribute('data-src');
+      });
+      faceIO.disconnect();
+    });
+  },{rootMargin:'250px 0px'});
+  faceIO.observe(teamEl);
+}
+var moveT=null;
+addEventListener('scroll',function(){
+  document.body.classList.add('moving');
+  clearTimeout(moveT);
+  moveT=setTimeout(function(){document.body.classList.remove('moving');},300);
+},{passive:true});
+
+/* ---------- theme ---------- */
+var THEME_BG={light:'#ffffff',dark:'#06080c'};
+var tmeta=document.getElementById('tcol');
+function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  if(tmeta) tmeta.setAttribute('content',THEME_BG[t]);
+  document.dispatchEvent(new CustomEvent('themepaint',{detail:t}));
+}
+setTheme(curTheme());
+document.addEventListener('settheme',function(e){ setTheme(e.detail); });
+
+/* ---------- renderer ---------- */
+var canvas=document.getElementById('gl'),renderer;
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+try{renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});}
+catch(e){canvas.style.display='none';return;}
+if(!renderer){canvas.style.display='none';return;}
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setSize(innerWidth,innerHeight,false);
+renderer.setClearColor(curTheme()==='dark'?0x06080c:0xffffff,1);
+
+var cam=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,0.1,60);
+cam.position.set(0,0,3);
+var scene=new THREE.Scene();
+
+/* ---------- ribbon strips ---------- */
+var LINES = innerWidth<760 ? 34 : 52;
+var SEG   = innerWidth<760 ? 120 : 190;
+var vCount=LINES*(SEG+1)*2;
+var pos=new Float32Array(vCount*3);
+var aLine=new Float32Array(vCount), aT=new Float32Array(vCount), aSide=new Float32Array(vCount);
+var idx=[];
+var v=0;
+for(var l=0;l<LINES;l++){
+  var lf=LINES===1?0.5:l/(LINES-1);
+  var base=l*(SEG+1)*2;
+  for(var s=0;s<=SEG;s++){
+    var t=s/SEG;
+    aLine[v]=lf; aT[v]=t; aSide[v]=-1; v++;
+    aLine[v]=lf; aT[v]=t; aSide[v]= 1; v++;
+  }
+  for(var s2=0;s2<SEG;s2++){
+    var a=base+s2*2,b=a+1,c=a+2,d=a+3;
+    idx.push(a,b,c, b,d,c);
+  }
+}
+var geo=new THREE.BufferGeometry();
+geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+geo.setAttribute('aLine',new THREE.BufferAttribute(aLine,1));
+geo.setAttribute('aT',new THREE.BufferAttribute(aT,1));
+geo.setAttribute('aSide',new THREE.BufferAttribute(aSide,1));
+geo.setIndex(idx);
+geo.boundingSphere=new THREE.Sphere(new THREE.Vector3(),40);
+
+var U={
+  uTime:{value:0}, uTravel:{value:0}, uNarrow:{value:0}, uMorph:{value:0}, uMix:{value:1},
+  uA:{value:0}, uB:{value:0}, uW:{value:new THREE.Vector2(4,2.5)}, uWidth:{value:0.010},
+  uAlpha:{value:1}, uSSX:{value:1}, uSOX:{value:0}, uSSY:{value:1}, uSOY:{value:0}, uVert:{value:0},
+  uStag:{value:0.5}, uSweep:{value:0}, uMouse:{value:new THREE.Vector2(0,0)}, uPointer:{value:0},
+  uWK:{value:1}, uRip:{value:1}, uStream:{value:1}, uDark:{value:curTheme()==='dark'?1:0}
+};
+var SHAPE_W  =[1.0, 1.0, 1.0, 0.80, 0.70, 1.0];
+var SHAPE_RIP=[1.0, 1.0, 1.0, 0.26, 0.70, 1.0];
+var SHAPE_STREAM=[1.0, 1.0, 1.0, 1.035, 1.0, 1.0];
+
+var SHAPES=[
+'  const float RSPLIT=0.62;',
+'  const float RD=5.0;',
+'  const float RRUN=0.30;',
+'  const float RN=6.0;',
+'  const float RLO=-0.667;',
+'  const float RSPAN=1.164;',
+'  float tieG(float li){ return floor(((li-RSPLIT)/(1.0-RSPLIT))*(RD-0.001)); }',
+'  float rowY(float g){ return RLO+RSPAN*(clamp(g,0.0,RN-1.0)/(RN-1.0)); }',
+'  const float RSTAG=1.9;',
+'  float rowRev(float g){',
+'    float lead=(RN-1.0-g)/(RN-1.0);',
+'    float m=clamp(uMix*(1.0+RSTAG)-RSTAG*lead,0.0,1.0);',
+'    return m*m*m*(m*(m*6.0-15.0)+10.0);',
+'  }',
+'  const float SNAKE=2.04;',
+'  const float TRAVEL=2.04+SNAKE;',
+'  const float TCYC=2.8;',
+'  const float TACT=0.72;',
+'  const float TJIT=0.16;',
+'  float tieSlotT(float g){',
+'    if(g<0.5) return 0.0;',
+'    if(g<1.5) return 0.6;',
+'    if(g<2.5) return 0.2;',
+'    if(g<3.5) return 0.8;',
+'    return 0.4;',
+'  }',
+'  float tieHash(float n){ return fract(sin(n*17.13)*43758.5453); }',
+'  float tiePass(float g){ return floor(uTime/TCYC-tieSlotT(g)+0.5); }',
+'  float tieDelta(float g){',
+'    float n=tiePass(g);',
+'    return uTime/TCYC-tieSlotT(g)-TJIT*(tieHash(n*5.3+g*2.7)-0.5)-n;',
+'  }',
+'  float tieX0(float g){',
+'    return mix(-0.90,0.60,tieHash(tiePass(g)*3.7+g*11.3));',
+'  }',
+'  float tieQ(float g){ return (tieX0(g)+1.02+(RRUN+SNAKE)*0.5)/TRAVEL; }',
+'  float tieInk(float g,float t){',
+'    float ph=tieDelta(g)+tieQ(g)*TACT;',
+'    if(ph<0.0||ph>TACT) return 0.0;',
+'    float head=mix(-1.02,1.02+SNAKE,ph/TACT);',
+'    float tail=head-SNAKE;',
+'    float x=mix(-1.02,1.02,t), f=0.18;',
+'    return smoothstep(tail,tail+f,x)*(1.0-smoothstep(head-f,head,x));',
+'  }',
+'  vec2 river(float li,float t){',
+'    float x=mix(-1.18,1.18,t);',
+'    float lane=li*2.0-1.0;',
+'    float ebb=0.62+0.28*sin(x*1.35-uTravel*2.6-uTime*0.05)+0.10*sin(x*3.1+uTravel*1.7+1.3);',
+'    float choke=exp(-x*x*3.2)*uNarrow;',
+'    float w=0.66*ebb*(1.0-0.88*choke);',
+'    float y=lane*w',
+'      +0.115*sin(x*1.65+0.6-uTravel*1.2)',
+'      +0.050*sin(x*3.60+2.1+uTravel*0.8)',
+'      +0.020*sin(x*5.2-uTime*0.45+lane*2.2);',
+'    return vec2(x,y);',
+'  }',
+'  vec2 canyon(float li,float t){',
+'    float x=mix(-1.0,1.0,t); float u=t;',
+'    float up=-0.70+0.1316*exp(2.34*u);',
+'    float lo=-0.667+0.132*pow(u,1.4);',
+'    float k=smoothstep(0.38,0.62,li);',
+'    float y=mix(lo,up,k)+(li-0.5)*0.045;',
+'    return vec2(x,y);',
+'  }',
+'  vec2 fan(float li,float t){',
+'    float x=mix(-1.0,1.0,t); float u=t;',
+'    float top=-0.66+1.44*pow(u,1.55);',
+'    float lo=-0.80+0.05*u;',
+'    float y=mix(lo,top,pow(li,1.18));',
+'    return vec2(x,y);',
+'  }',
+'  vec2 rules(float li,float t,float ing){',
+'    float N=RN, split=RSPLIT, spread=0.0533;',
+'    if(li<split){',
+'      float u=li/split;',
+'      float g=floor(u*(N-0.001)), loc=fract(u*(N-0.001));',
+'      float c=ing*(1.0-rowRev(g));',
+'      return vec2(mix(-1.02,1.02,t), rowY(g+c)+(loc-0.5)*spread);',
+'    }',
+'    float u=(li-split)/(1.0-split);',
+'    float g=tieG(li), loc=fract(u*(RD-0.001));',
+'    float c=ing*(1.0-rowRev(g));',
+'    float yA=rowY(g+1.0+c);',
+'    float yB=rowY(g+c);',
+'    float x=mix(-1.02,1.02,t);',
+'    float x0=tieX0(g);',
+'    float pl=clamp((x-x0)/RRUN,0.0,1.0);',
+'    float p=pl*pl*(3.0-2.0*pl);',
+'    float dp=6.0*pl*(1.0-pl)/RRUN;',
+'    float sl=(uW.y*0.42)/max(0.001,uSSX*uW.x*0.5);',
+'    float m=sl*(yB-yA)*dp;',
+'    float inv=inversesqrt(1.0+m*m), jit=(loc-0.5)*spread;',
+'    return vec2(x-jit*sl*m*inv, mix(yA,yB,p)+jit*inv);',
+'  }',
+'  vec2 rails(float li,float t){',
+'    float g=floor(li*4.999);',
+'    float loc=fract(li*4.999);',
+'    float x=mix(-1.0,1.0,t);',
+'    float th=4.2*t+g*2.513+uTime*0.042;',
+'    float y=0.40*sin(th);',
+'    float sl=(uW.y*0.42)/max(0.001,uSSX*uW.x*0.5);',
+'    float m=sl*0.84*cos(th);',
+'    y+=(loc-0.5)*0.072*sqrt(1.0+m*m);',
+'    return vec2(x,y);',
+'  }',
+'  vec2 conf(float li,float t){',
+'    float x=mix(-1.05,1.05,t);',
+'    float u=t;',
+'    float pinch=smoothstep(0.05,0.46,u)*smoothstep(0.95,0.54,u);',
+'    pinch=pow(pinch,1.25);',
+'    float spread=mix(0.56,0.035,pinch);',
+'    float lane=li*2.0-1.0;',
+'    float y=lane*spread',
+'      +0.030*sin(u*7.0+li*12.0)*(1.0-pinch)',
+'      +0.010*sin(uTime*0.5+li*9.0)*pinch;',
+'    return vec2(x,y);',
+'  }',
+'  vec2 shape(int id,float li,float t,float ing){',
+'    if(id==1) return canyon(li,t);',
+'    if(id==2) return fan(li,t);',
+'    if(id==3) return rules(li,t,ing);',
+'    if(id==4) return rails(li,t);',
+'    if(id==5) return conf(li,t);',
+'    return river(li,t);',
+'  }',
+'  float xfade(float li){',
+'    float lead=mix(li,1.0-li,uSweep);',
+'    float m=clamp(uMix*(1.0+uStag)-uStag*lead,0.0,1.0);',
+'    return m*m*m*(m*(m*6.0-15.0)+10.0);',
+'  }',
+'  vec2 field(float li,float t){',
+'    vec2 r=river(li,t);',
+'    vec2 s=mix(shape(uA,li,t,0.0),shape(uB,li,t,1.0),xfade(li));',
+'    s.x=s.x*uSSX+uSOX;',
+'    s.y+=uRip*(0.011*sin(uTime*0.55+t*4.6+li*9.4)+0.006*sin(uTime*0.34+t*10.7+li*3.1));',
+'    vec2 f=mix(r,s,uMorph);',
+'    f.y=f.y*uSSY+uSOY;',
+'    return f;',
+'  }'
+].join('\n');
+
+var mat=new THREE.ShaderMaterial({
+  uniforms:U, transparent:true, depthTest:false, depthWrite:false, side:THREE.DoubleSide,
+  vertexShader:[
+  'precision highp float;',
+  'attribute float aLine,aT,aSide;',
+  'uniform float uTime,uTravel,uNarrow,uMorph,uMix,uWidth,uAlpha,uSSX,uSOX,uSSY,uSOY,uVert,uStag,uSweep,uPointer,uWK,uRip,uStream;',
+  'uniform int uA,uB;',
+  'uniform vec2 uW,uMouse;',
+  'varying float vAlpha; varying float vLine; varying float vT;',
+  SHAPES,
+  'void main(){',
+  '  float e=0.0025;',
+  '  vec2 p0=field(aLine,aT);',
+  '  vec2 p1=field(aLine,min(1.0,aT+e));',
+  '  vec2 pm=field(aLine,max(0.0,aT-e));',
+  '  vec2 dir=normalize((p1-pm)*vec2(uW.x*0.5,uW.y*0.42)+vec2(1e-5,0.0));',
+  '  vec2 nrm=vec2(-dir.y,dir.x);',
+  '  vec2 P=vec2(p0.x*uW.x*0.5, p0.y*uW.y*0.42);',
+  '  float endFade=smoothstep(0.0,0.085,aT)*smoothstep(1.0,0.915,aT);',
+  '  float led=(uA==3?1.0-xfade(aLine):0.0)+(uB==3?xfade(aLine):0.0);',
+  '  float aFade=endFade;',
+  '  if(aLine>=RSPLIT) aFade*=mix(1.0,tieInk(tieG(aLine),aT),led*uMorph);',
+  '  vec2 mpos=vec2(uMouse.x*uW.x*0.5,uMouse.y*uW.y*0.5);',
+  '  vec2 dm=P-mpos;',
+  '  float dd=length(dm);',
+  '  float R=uW.y*0.36;',
+  '  float fall=1.0-smoothstep(0.0,R,dd);',
+  '  fall=fall*fall*(3.0-2.0*fall)*uPointer;',
+  '  float wob=0.80+0.45*fract(sin(aLine*91.7)*43758.5453);',
+  '  float w=uWidth*wob*uWK*(1.0+uMorph*0.10)*(0.34+0.66*sqrt(endFade))*(1.0+fall*0.12);',
+  '  P+=nrm*aSide*w;',
+  '  P+=(dm/(dd+1e-4))*fall*smoothstep(0.0,R*0.30,dd)*R*0.00585;',
+  '  P.x+=uMouse.x*0.0108; P.y+=uMouse.y*0.0072;',
+  '  gl_Position=projectionMatrix*modelViewMatrix*vec4(P,0.0,1.0);',
+  '  float stream=sin(aT*16.0-uTime*0.9+aLine*97.0);',
+  '  vAlpha=aFade*uAlpha*(1.0+uStream*0.20*stream);',
+  '  vLine=aLine; vT=aT;',
+  '}'].join('\n'),
+  fragmentShader:[
+  'precision highp float;',
+  'varying float vAlpha; varying float vLine; varying float vT;',
+  'uniform float uMorph,uDark;',
+  'void main(){',
+  '  vec3 deep=mix(vec3(0.031,0.196,1.000),vec3(0.243,0.404,1.000),uDark);',
+  '  vec3 light=mix(vec3(0.325,0.514,1.000),vec3(0.576,0.694,1.000),uDark);',
+  '  vec3 col=mix(deep,light,smoothstep(0.0,1.0,vLine)*0.75);',
+  '  float a=mix(0.20,0.60,uMorph)*vAlpha*(1.0+uDark*0.30);',
+  '  gl_FragColor=vec4(col,a);',
+  '}'].join('\n')
+});
+scene.add(new THREE.Mesh(geo,mat));
+document.addEventListener('themepaint',function(e){
+  var dark=e.detail==='dark';
+  renderer.setClearColor(dark?0x06080c:0xffffff,1);
+  U.uDark.value=dark?1:0;
+});
+
+/* ---------- scroll → state ---------- */
+var S={narrow:0,morph:0,travel:0,mix:0,cOut:0}, T={narrow:0,morph:0,travel:0,mix:0,cOut:0};
+function ss(a,b,x){var t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);}
+
+var viz1=document.getElementById('viz1');
+var plotEl=viz1.querySelector('.plot');
+var vo1=0;
+var colH=document.querySelector('#hero .col'),
+    colP=document.querySelector('#problem .col'),
+    colI=document.querySelector('#intro .col'),
+    colS=document.querySelector('#solution .col'),
+    colT=document.querySelector('#leadership .col'),
+    colC=document.querySelector('#contact .col');
+var COLS=[colH,colP,colI,colS,colT,colC];
+
+var M={top:[0,0,0,0,0,0],h:[0,0,0,0,0,0],docH:1};
+function measure(){
+  var y=scrollY;
+  for(var i=0;i<COLS.length;i++){
+    var r=COLS[i].getBoundingClientRect();
+    M.top[i]=r.top+y; M.h[i]=r.height;
+  }
+  M.docH=Math.max(1,document.body.scrollHeight-innerHeight);
+}
+measure();
+
+function update(){
+  var y=scrollY, vh=innerHeight, mb=innerWidth<900;
+  T.travel=(y/M.docH)*2.2;
+  var TK=mb?1.27:1.20, MK=mb?1.42:1.25;
+  function crossTop(i){return Math.min(1,Math.max(0,(vh*TK-(M.top[i]-y))/(vh*0.65)));}
+  function crossMid(i){return Math.min(1,Math.max(0,(vh*MK-(M.top[i]-y+M.h[i]*0.5))/(vh*0.65)));}
+  var mI=crossTop(2), mS=crossMid(3), mT=crossMid(4);
+  T.mix=mI+mS+mT;
+  T.cOut=mI;
+  T.morph=Math.min(crossTop(1), 1-ss(0,1,crossTop(5)));
+  T.narrow=0;
+  if(mb){
+    var best=0.20, bestD=1e9;
+    for(var ci=0;ci<COLS.length;ci++){
+      var sc=(M.top[ci]-y-vh*0.13)/vh;
+      var d=Math.abs(sc-0.28);
+      if(d<bestD){bestD=d;best=sc;}
+    }
+    T.bandSC=best;
+  }
+}
+
+/* ---------- resize ---------- */
+function resize(){
+  var w=innerWidth||document.documentElement.clientWidth||1,
+      h=innerHeight||document.documentElement.clientHeight||1;
+  renderer.setSize(w,h,false);
+  cam.aspect=w/h; cam.updateProjectionMatrix();
+  var vH=2*Math.tan(cam.fov*Math.PI/360)*cam.position.z;
+  U.uW.value.set(vH*cam.aspect,vH);
+  var narrow=w<900;
+  if(narrow){U.uSSX.value=0.98;U.uSOX.value=0.0;U.uSSY.value=0.24;U.uSOY.value=0.79;}
+  else {U.uSSX.value=0.405;U.uSOX.value=-0.445;U.uSSY.value=1.0;U.uSOY.value=0.0;U.uAlpha.value=1.0;}
+  U.uWidth.value = (w<760 ? 0.0100 : 0.0092)
+    * (narrow ? U.uSSY.value*(52/LINES) : 1);
+}
+addEventListener('resize',function(){resize();measure();}); resize();
+
+var mx=0,my=0,pointerOn=0;
+addEventListener('pointermove',function(e){
+  if(e.pointerType==='touch'||reduce) return;
+  mx=(e.clientX/innerWidth-.5)*2; my=-(e.clientY/innerHeight-.5)*2; pointerOn=1;
+},{passive:true});
+addEventListener('pointerleave',function(){pointerOn=0;},{passive:true});
+addEventListener('blur',function(){pointerOn=0;});
+
+/* ---------- loop ---------- */
+var CHAIN=[
+  {a:1,b:5,stag:0.62,sweep:0},
+  {a:5,b:3,stag:0.55,sweep:1},
+  {a:3,b:4,stag:0.45,sweep:0}
+];
+var clock=new THREE.Clock(),t=0,lastPlotTop=1e9;
+function frame(){
+  requestAnimationFrame(frame);
+  var dt=Math.min(0.05,clock.getDelta()); t+=dt;
+  update();
+  var k=1-Math.pow(0.05,dt);
+  S.narrow+=(T.narrow-S.narrow)*k;
+  S.morph +=(T.morph -S.morph )*k;
+  S.travel+=(T.travel-S.travel)*(1-Math.pow(0.012,dt));
+  var km=1-Math.pow(0.002,dt);
+  S.mix +=(T.mix -S.mix )*km;
+  S.cOut+=(T.cOut-S.cOut)*km;
+  var seg=Math.min(CHAIN.length-1,Math.max(0,Math.floor(S.mix))), f=Math.min(1,Math.max(0,S.mix-seg));
+  var link=CHAIN[seg];
+  U.uA.value=link.a; U.uB.value=link.b;
+  U.uStag.value=link.stag; U.uSweep.value=link.sweep;
+  U.uMix.value=f;
+  var fw=f*f*(3-2*f);
+  U.uWK.value =SHAPE_W[link.a]  +(SHAPE_W[link.b]  -SHAPE_W[link.a])  *fw;
+  U.uRip.value=SHAPE_RIP[link.a]+(SHAPE_RIP[link.b]-SHAPE_RIP[link.a])*fw;
+  U.uStream.value=SHAPE_STREAM[link.a]+(SHAPE_STREAM[link.b]-SHAPE_STREAM[link.a])*fw;
+
+  U.uTime.value=reduce?0:t;
+  U.uTravel.value=S.travel;
+  U.uNarrow.value=S.narrow;
+  U.uMorph.value=S.morph;
+  var kp=1-Math.pow(0.0015,dt);
+  U.uMouse.value.x+=(mx-U.uMouse.value.x)*kp;
+  U.uMouse.value.y+=(my-U.uMouse.value.y)*kp;
+  U.uPointer.value+=(pointerOn-U.uPointer.value)*(1-Math.pow(0.05,dt));
+
+  var mob=innerWidth<900, bandFade=1;
+  if(mob){
+    var bsc=(T.bandSC!==undefined)?T.bandSC:0.19;
+    U.uSOY.value=(1-2*bsc)/0.84;
+    bandFade=ss(0.05,0.13,bsc)*(1-ss(0.45,0.72,bsc));
+    U.uAlpha.value=1.2*bandFade;
+    var pt=((bsc-0.101)*100)-1.5;
+    if(Math.abs(pt-lastPlotTop)>0.04){
+      lastPlotTop=pt;
+      plotEl.style.top=pt+'%';
+      plotEl.style.bottom=(((1-(bsc+0.101))*100)-2.0)+'%';
+    }
+  } else if(plotEl.style.top){ plotEl.style.top=''; plotEl.style.bottom=''; lastPlotTop=1e9; }
+
+  vo1+=((S.morph*(1-ss(0.08,0.30,S.cOut)))-vo1)*(1-Math.pow(0.05,dt));
+  viz1.style.opacity=(vo1*(mob?bandFade:1)).toFixed(3);
+
+  renderer.render(scene,cam);
+}
+frame();
+
+/* ---------- section guide + gentle scroll magnet ---------- */
+function easeInOutQuint(x){return x<0.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;}
+var SPRW=3*Math.PI, SPRD=7.22;
+function easeOutSpring(x){
+  return 1-Math.exp(-SPRD*x)*(Math.cos(SPRW*x)+(SPRD/SPRW)*Math.sin(SPRW*x));
+}
+var scrollAnimId=null,restoreSB=null;
+function smoothScrollTo(target,duration){
+  var docH=Math.max(1,document.body.scrollHeight-innerHeight);
+  target=Math.max(0,Math.min(docH,target));
+  var start=scrollY,dist=target-start,adist=Math.abs(dist);
+  var far=adist>innerHeight*0.75, ease=far?easeInOutQuint:easeOutSpring;
+  if(duration==null) duration=reduce?0:(far
+    ? Math.max(520,Math.min(920,360+0.34*adist))
+    : Math.max(360,Math.min(640,300+2.0*adist)));
+  if(innerWidth<900) duration*=1.25;
+  if(scrollAnimId) cancelAnimationFrame(scrollAnimId);
+  if(!duration||adist<1){ scrollTo({top:target,left:0,behavior:'auto'}); return; }
+  var de=document.documentElement, prevSB=de.style.scrollBehavior;
+  de.style.scrollBehavior='auto';
+  restoreSB=function(){ de.style.scrollBehavior=prevSB; restoreSB=null; };
+  var t0=null;
+  function step(ts){
+    if(t0===null) t0=ts;
+    var p=Math.min(1,(ts-t0)/duration);
+    scrollTo({top:p<1?start+dist*ease(p):target,left:0,behavior:'auto'});
+    if(p<1) scrollAnimId=requestAnimationFrame(step);
+    else{
+      scrollAnimId=null;
+      if(restoreSB) restoreSB();
+      autoSnap=true; setTimeout(function(){autoSnap=false;},360);
+    }
+  }
+  scrollAnimId=requestAnimationFrame(step);
+}
+['wheel','touchstart','keydown'].forEach(function(ev){
+  addEventListener(ev,function(){
+    if(scrollAnimId){ cancelAnimationFrame(scrollAnimId); scrollAnimId=null;
+      if(restoreSB) restoreSB();
+      autoSnap=true; setTimeout(function(){autoSnap=false;},420); }
+  },{passive:true});
+});
+var gdots=[].slice.call(document.querySelectorAll('#guide a'));
+var ANC=[];
+function topDoc(el){return el.getBoundingClientRect().top+scrollY;}
+var secEls=[document.getElementById('hero'),document.getElementById('problem'),
+  document.getElementById('intro'),document.getElementById('solution'),
+  document.getElementById('leadership'),document.getElementById('contact')];
+function calcAnc(){
+  measure();
+  var vh=innerHeight, mob=innerWidth<900;
+  var cols=COLS;
+  if(mob){
+    ANC=[0];
+    for(var i=1;i<cols.length;i++){
+      var chh=cols[i].getBoundingClientRect().height;
+      if(chh>vh*0.62){
+        ANC.push(topDoc(cols[i])-vh*0.16);
+      } else {
+        var extra=Math.max(0,vh*0.58-chh)/2;
+        ANC.push(topDoc(cols[i])-vh*0.34-extra);
+      }
+    }
+    var maxY=Math.max(0,document.body.scrollHeight-vh);
+    for(var c=0;c<ANC.length;c++) ANC[c]=Math.max(0,Math.min(maxY,ANC[c]));
+    for(var j=0;j<secEls.length;j++){
+      secEls[j].style.scrollMarginTop=(topDoc(secEls[j])-ANC[j])+'px';
+    }
+  } else {
+    /* A column taller than the viewport cannot be centred: centring it drives
+       its first line under the nav veil and its last rows into the bottom fade.
+       Those rest with the heading just below the nav instead and are read by
+       scrolling, the same rule mobile already applies. */
+    ANC=[0];
+    for(var i2=1;i2<cols.length;i2++){
+      var chd=cols[i2].getBoundingClientRect().height;
+      ANC.push(chd>vh*0.78
+        ? topDoc(cols[i2])-vh*0.14
+        : topDoc(cols[i2])+chd/2-vh*0.5);
+    }
+    var maxD=Math.max(0,document.body.scrollHeight-vh);
+    for(var d=0;d<ANC.length;d++) ANC[d]=Math.max(0,Math.min(maxD,ANC[d]));
+    for(var k=0;k<secEls.length;k++) secEls[k].style.scrollMarginTop='';
+  }
+}
+calcAnc();
+setTimeout(calcAnc,900);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(calcAnc);
+var lastW=innerWidth,lastVH=innerHeight;
+addEventListener('resize',function(){
+  var wChanged=innerWidth!==lastW, dh=Math.abs(innerHeight-lastVH);
+  lastW=innerWidth;
+  if(!wChanged&&dh<lastVH*0.25) return;
+  lastVH=innerHeight;
+  setTimeout(calcAnc,60);
+});
+addEventListener('visibilitychange',function(){
+  if(!document.hidden){resize();calcAnc();}
+});
+var SEC_ID=['hero','problem','intro','solution','leadership','contact'];
+[].slice.call(document.querySelectorAll('a[href^="#"]')).forEach(function(a){
+  var i=SEC_ID.indexOf(a.getAttribute('href').slice(1));
+  if(i<0) return;
+  a.addEventListener('click',function(e){ e.preventDefault(); smoothScrollTo(ANC[i]); });
+});
+var nextBtn=document.getElementById('next'),guiAct=0;
+function nextAnchor(){
+  var y=scrollY,gap=innerHeight*0.12;
+  for(var i=0;i<ANC.length;i++){ if(ANC[i]>y+gap) return i; }
+  return -1;
+}
+function setDots(){
+  var act=0,bd=1e9;
+  for(var i=0;i<ANC.length;i++){var d=Math.abs(ANC[i]-scrollY); if(d<bd){bd=d;act=i;}}
+  guiAct=act;
+  for(var j=0;j<gdots.length;j++) gdots[j].classList.toggle('on',j===act);
+  nextBtn.classList.toggle('off',nextAnchor()<0);
+}
+setDots();
+nextBtn.addEventListener('click',function(){
+  var i=nextAnchor();
+  if(i>=0) smoothScrollTo(ANC[i]);
+});
+var snapT=null,autoSnap=false;
+addEventListener('scroll',function(){
+  setDots();
+  if(innerWidth<900||autoSnap||reduce||scrollAnimId) return;
+  clearTimeout(snapT);
+  snapT=setTimeout(function(){
+    var vh=innerHeight,best=-1,bd=1e9;
+    for(var i=0;i<ANC.length;i++){
+      var d=Math.abs(ANC[i]-scrollY);
+      if(d<bd){bd=d;best=i;}
+    }
+    if(best<0||bd<=4||bd>vh*0.11) return;
+    autoSnap=true;
+    smoothScrollTo(ANC[best]);
+    setTimeout(function(){autoSnap=false;},900);
+  },180);
+},{passive:true});
+})();
+</script>
 </body>
 </html>
