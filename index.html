@@ -489,19 +489,6 @@
       reporting through cryptographically secure on-chain infrastructure. Through tokenization, we make
       cap table management and share transfers seamless while <b>providing control to the companies we
       serve</b>.</p>
-    <div class="register rv">
-      <div class="rlab">What the infrastructure supports</div>
-      <div class="reg"><div class="k">Issuance &amp; cap table</div>
-        <div class="v">Seamless tokenized issuance, transfers, and process support</div></div>
-      <div class="reg"><div class="k">Ownership verification</div>
-        <div class="v">Enhanced information and equity ownership verified on-chain</div></div>
-      <div class="reg"><div class="k">Secondaries</div>
-        <div class="v">Secondary trades, settled atomically, with ROFR programmed in</div></div>
-      <div class="reg"><div class="k">Lending</div>
-        <div class="v">Equity-backed loans against private positions</div></div>
-      <div class="reg"><div class="k">AI-powered reporting</div>
-        <div class="v">Reporting generated from cryptographically secure records</div></div>
-    </div>
   </div></div></section>
 
   <section id="solution"><div class="bank"><div class="col">
@@ -968,9 +955,9 @@ addEventListener('blur',function(){pointerOn=0;});
 
 /* ---------- loop ---------- */
 var CHAIN=[
-  {a:1,b:5,stag:0.62,sweep:0}, /* canyon → marketplace : the gap converges on one venue */
-  {a:5,b:3,stag:0.55,sweep:1}, /* marketplace → ledger : the venue rules itself into rows */
-  {a:3,b:4,stag:0.45,sweep:0}  /* ledger → rails       : the rows become the people */
+  {a:1,b:5,stag:0.62,sweep:0},
+  {a:5,b:3,stag:0.55,sweep:1},
+  {a:3,b:4,stag:0.45,sweep:0}
 ];
 var clock=new THREE.Clock(),t=0,lastPlotTop=1e9;
 function frame(){
