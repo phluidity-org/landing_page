@@ -3,13 +3,59 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Phluidity: Private Market Liquidity, At Last</title>
+<title>Phluidity — Tokenized Private Market Liquidity, At Last</title>
 <meta name="description" content="Phluidity is the marketplace for private companies. Issue, sell, buy, borrow, lend." />
+<meta name="keywords" content="Phluidity, private markets, private market liquidity, secondary market, secondaries, liquidity, tokenized equity, cap table, equity-backed lending, ROFR, private company marketplace, RWA, real-world assets" />
+<meta name="author" content="Phluidity Inc." />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+<link rel="canonical" href="https://phluidity.com/" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Phluidity" />
+<meta property="og:title" content="Phluidity — Tokenized Private Market Liquidity, At Last" />
+<meta property="og:description" content="The marketplace for private companies. Issue, sell, buy, borrow, lend." />
+<meta property="og:url" content="https://phluidity.com/" />
+<meta property="og:image" content="https://phluidity.com/img/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Phluidity — private market liquidity, at last." />
+<meta property="og:locale" content="en_US" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Phluidity — Tokenized Private Market Liquidity, At Last" />
+<meta name="twitter:description" content="The marketplace for private companies. Issue, sell, buy, borrow, lend." />
+<meta name="twitter:image" content="https://phluidity.com/img/og.png" />
+
 <meta name="theme-color" content="#ffffff" id="tcol" />
 <link rel="icon" href="favicon-1A.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://phluidity.com/#org",
+      "name": "Phluidity",
+      "legalName": "Phluidity Inc.",
+      "url": "https://phluidity.com/",
+      "image": "https://phluidity.com/img/og.png",
+      "description": "Phluidity is the marketplace for private companies. Issue, sell, buy, borrow, lend.",
+      "sameAs": ["https://linkedin.com/company/phluidity"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://phluidity.com/#site",
+      "url": "https://phluidity.com/",
+      "name": "Phluidity",
+      "publisher": { "@id": "https://phluidity.com/#org" },
+      "inLanguage": "en-US"
+    }
+  ]
+}
+</script>
 <style>
   :root{
     --white:#ffffff;
@@ -132,14 +178,16 @@
   @media(max-width:900px){
     .topfade{height:128px}
     .botfade{height:76px}
-    .botfade i:nth-child(2){display:none}
-    .topfade i:nth-child(2),.topfade i:nth-child(4){display:none}
-    .topfade i:nth-child(3){backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
-      -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 24%,transparent 62%);
-              mask-image:linear-gradient(to bottom,var(--mask-on) 0%,var(--mask-on) 24%,transparent 62%)}
-    .topfade i:nth-child(5){backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
-      -webkit-mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%);
-              mask-image:linear-gradient(to bottom,var(--mask-on) 0%,transparent 30%)}
+    .topfade i,.botfade i,.navveil i,.pbio,.next{backdrop-filter:none;-webkit-backdrop-filter:none}
+    .topfade i,.botfade i,.navveil i{display:none}
+    .topfade::after{background:linear-gradient(to bottom,
+      var(--white) 0%,rgba(var(--veil),.90) 44%,rgba(var(--veil),.42) 74%,rgba(var(--veil),0) 100%)}
+    .botfade::after{background:linear-gradient(to top,
+      rgba(var(--veil),.92) 0%,rgba(var(--veil),.50) 46%,rgba(var(--veil),0) 100%)}
+    .navveil::after{background:linear-gradient(to bottom,
+      var(--white) 0%,rgba(var(--veil),.72) 60%,rgba(var(--veil),0) 100%)}
+    .pbio{background:var(--white)}
+    .next{background:var(--white)}
   }
   @media(prefers-reduced-transparency:reduce){
     .topfade i,.botfade i,.navveil i{display:none}
@@ -632,10 +680,11 @@ document.addEventListener('settheme',function(e){ setTheme(e.detail); });
 /* ---------- renderer ---------- */
 var canvas=document.getElementById('gl'),renderer;
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-try{renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});}
+var mobile=innerWidth<900||matchMedia('(pointer:coarse)').matches;
+try{renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:!mobile,alpha:false,powerPreference:'high-performance'});}
 catch(e){canvas.style.display='none';return;}
 if(!renderer){canvas.style.display='none';return;}
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.35:2));
 renderer.setSize(innerWidth,innerHeight,false);
 renderer.setClearColor(curTheme()==='dark'?0x06080c:0xffffff,1);
 
@@ -644,8 +693,8 @@ cam.position.set(0,0,3);
 var scene=new THREE.Scene();
 
 /* ---------- ribbon strips ---------- */
-var LINES = innerWidth<760 ? 34 : 52;
-var SEG   = innerWidth<760 ? 120 : 190;
+var LINES = mobile ? 26 : 52;
+var SEG   = mobile ? 96 : 190;
 var vCount=LINES*(SEG+1)*2;
 var pos=new Float32Array(vCount*3);
 var aLine=new Float32Array(vCount), aT=new Float32Array(vCount), aSide=new Float32Array(vCount);
@@ -961,8 +1010,16 @@ var CHAIN=[
   {a:3,b:4,stag:0.45,sweep:0}
 ];
 var clock=new THREE.Clock(),t=0,lastPlotTop=1e9;
+var rafId=null;
+function start(){ if(rafId===null){ clock.getDelta(); rafId=requestAnimationFrame(frame); } }
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){ if(rafId!==null){ cancelAnimationFrame(rafId); rafId=null; } }
+  else start();
+});
 function frame(){
-  requestAnimationFrame(frame);
+  rafId=null;
+  if(document.hidden) return;
+  rafId=requestAnimationFrame(frame);
   var dt=Math.min(0.05,clock.getDelta()); t+=dt;
   update();
   var k=1-Math.pow(0.05,dt);
