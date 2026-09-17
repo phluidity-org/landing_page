@@ -1134,7 +1134,9 @@ function calcAnc(){
     for(var i=1;i<cols.length;i++){
       var chh=cols[i].getBoundingClientRect().height;
       if(chh>vh*0.62){
-        ANC.push(topDoc(cols[i])-vh*0.16);
+        /* Top offset must still clear the fixed line-graphic band (.linemask,
+           30svh) — a smaller margin here would land the heading behind it. */
+        ANC.push(topDoc(cols[i])-vh*0.34);
       } else {
         var extra=Math.max(0,vh*0.58-chh)/2;
         ANC.push(topDoc(cols[i])-vh*0.34-extra);
