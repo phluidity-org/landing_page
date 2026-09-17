@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://phluidity.com/img/og.png" />
 
 <meta name="theme-color" content="#ffffff" id="tcol" />
-<link rel="icon" href="favicon-1A.svg" type="image/svg+xml">
+<link rel="icon" href="assets/phluidity_mobius.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -200,9 +200,12 @@
     .topfade i,.botfade i,.navveil i{display:none}
   }
   .wordmark{font-size:15px;letter-spacing:var(--tk-brand);text-transform:uppercase;font-weight:500;
-    color:var(--ink);text-decoration:none;cursor:pointer;transition:opacity .3s}
+    color:var(--ink);text-decoration:none;cursor:pointer;transition:opacity .3s;display:inline-flex;align-items:center}
   .wordmark:hover{opacity:.72}
   .wordmark b{color:var(--blue);font-weight:500}
+  .wordmark img{height:26px;width:auto;display:none}
+  html[data-theme="light"] .wordmark img.logo-light{display:block}
+  html[data-theme="dark"] .wordmark img.logo-dark{display:block}
   .navlinks{display:flex;gap:clamp(16px,2.4vw,34px);align-items:center}
   .navlinks a{color:var(--ink-2);text-decoration:none;font-size:var(--fs-lab-1);letter-spacing:var(--tk-lab-1);
     text-transform:uppercase;font-weight:500;transition:color .3s}
@@ -495,7 +498,10 @@
 </div>
 
 <nav id="nav">
-  <a class="wordmark" id="logo" href="#hero" aria-label="Phluidity, back to top">Ph<b>l</b>uidity</a>
+  <a class="wordmark" id="logo" href="#hero" aria-label="Phluidity, back to top">
+    <img class="logo-light" src="assets/Pluidity Logo_Black_RGB.svg" alt="Phluidity" height="26">
+    <img class="logo-dark" src="assets/Phluidity Logo_White_RGB.svg" alt="Phluidity" height="26">
+  </a>
   <div class="navlinks">
     <a href="#problem">Problem</a><a href="#intro">Platform</a><a href="#leadership">Team</a>
     <a class="cta" href="#contact">Get in touch</a>
