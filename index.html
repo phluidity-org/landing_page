@@ -110,11 +110,25 @@
   @media(max-width:900px){
     .scrim{display:none}
   }
+  /* Mobile: scrolling text passes behind the pinned line graphic here,
+     rather than crossing in front of it — same veil trick as .scrim,
+     just shaped as a top band instead of a side gradient. */
+  .linemask{position:fixed;top:0;left:0;right:0;height:30svh;z-index:4;pointer-events:none;display:none;
+    background:linear-gradient(to bottom,rgba(var(--veil),1) 0%,rgba(var(--veil),1) 80%,rgba(var(--veil),0) 100%)}
+  @media(max-width:900px){
+    .linemask{display:block}
+  }
   .viz{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0}
   .plot{position:absolute;left:7%;right:52%;top:15%;bottom:19%;
     border-left:1px solid var(--rule-2);border-bottom:1px solid var(--rule-2)}
   .plot.p2{bottom:8%}
   @media(max-width:900px){.plot{left:5%;right:5%;top:8%;bottom:70%}.lab,.gapline,.ytick,.ylab{display:none}}
+  @media(max-width:900px){
+    /* Raised above .linemask so the graphic still paints on top of the
+       masked band while the mask hides the scrolling text underneath it. */
+    canvas#gl{z-index:5}
+    .viz{z-index:6}
+  }
   .ytick{position:absolute;left:-10px;transform:translate(-100%,-50%);font-size:10px;letter-spacing:.06em;color:var(--ink-3)}
   .ylab{position:absolute;left:-56px;top:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
   .vt{position:absolute;left:12px;top:-32px;font-size:var(--fs-lab-1);font-weight:600;
@@ -467,6 +481,7 @@
 <body>
 <canvas id="gl"></canvas>
 <div class="scrim"></div>
+<div class="linemask" aria-hidden="true"></div>
 
 <div class="viz" id="viz1" aria-hidden="true"><div class="plot">
   <span class="vt">Private-company value over time</span>
@@ -687,12 +702,15 @@ document.addEventListener('settheme',function(e){ setTheme(e.detail); });
 var canvas=document.getElementById('gl'),renderer;
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 var mobile=innerWidth<900||matchMedia('(pointer:coarse)').matches;
-try{renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:!mobile,alpha:false,powerPreference:'high-performance'});}
+try{renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:!mobile,alpha:true,powerPreference:'high-performance'});}
 catch(e){canvas.style.display='none';return;}
 if(!renderer){canvas.style.display='none';return;}
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.35:2));
 renderer.setSize(innerWidth,innerHeight,false);
-renderer.setClearColor(curTheme()==='dark'?0x06080c:0xffffff,1);
+/* Clear alpha 0: the canvas is transparent everywhere it isn't drawing a
+   line, so on mobile it can sit above the page content (z-index) without
+   blanking out the text underneath it. */
+renderer.setClearColor(curTheme()==='dark'?0x06080c:0xffffff,0);
 
 var cam=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,0.1,60);
 cam.position.set(0,0,3);
@@ -933,7 +951,7 @@ var mat=new THREE.ShaderMaterial({
 scene.add(new THREE.Mesh(geo,mat));
 document.addEventListener('themepaint',function(e){
   var dark=e.detail==='dark';
-  renderer.setClearColor(dark?0x06080c:0xffffff,1);
+  renderer.setClearColor(dark?0x06080c:0xffffff,0);
   U.uDark.value=dark?1:0;
 });
 
@@ -974,15 +992,6 @@ function update(){
   T.cOut=mI;
   T.morph=Math.min(crossTop(1), 1-ss(0,1,crossTop(5)));
   T.narrow=0;
-  if(mb){
-    var best=0.20, bestD=1e9;
-    for(var ci=0;ci<COLS.length;ci++){
-      var sc=(M.top[ci]-y-vh*0.13)/vh;
-      var d=Math.abs(sc-0.28);
-      if(d<bestD){bestD=d;best=sc;}
-    }
-    T.bandSC=best;
-  }
 }
 
 /* ---------- resize ---------- */
@@ -1015,7 +1024,7 @@ var CHAIN=[
   {a:5,b:3,stag:0.55,sweep:1},
   {a:3,b:4,stag:0.45,sweep:0}
 ];
-var clock=new THREE.Clock(),t=0,lastPlotTop=1e9;
+var clock=new THREE.Clock(),t=0;
 var rafId=null;
 function start(){ if(rafId===null){ clock.getDelta(); rafId=requestAnimationFrame(frame); } }
 document.addEventListener('visibilitychange',function(){
@@ -1054,22 +1063,15 @@ function frame(){
   U.uMouse.value.y+=(my-U.uMouse.value.y)*kp;
   U.uPointer.value+=(pointerOn-U.uPointer.value)*(1-Math.pow(0.05,dt));
 
-  var mob=innerWidth<900, bandFade=1;
+  var mob=innerWidth<900;
   if(mob){
-    var bsc=(T.bandSC!==undefined)?T.bandSC:0.19;
-    U.uSOY.value=(1-2*bsc)/0.84;
-    bandFade=ss(0.05,0.13,bsc)*(1-ss(0.45,0.72,bsc));
-    U.uAlpha.value=1.2*bandFade;
-    var pt=((bsc-0.101)*100)-1.5;
-    if(Math.abs(pt-lastPlotTop)>0.04){
-      lastPlotTop=pt;
-      plotEl.style.top=pt+'%';
-      plotEl.style.bottom=(((1-(bsc+0.101))*100)-2.0)+'%';
-    }
-  } else if(plotEl.style.top){ plotEl.style.top=''; plotEl.style.bottom=''; lastPlotTop=1e9; }
+    U.uSOY.value=0.79;
+    U.uAlpha.value=1.0;
+    if(plotEl.style.top){ plotEl.style.top=''; plotEl.style.bottom=''; }
+  }
 
   vo1+=((S.morph*(1-ss(0.08,0.30,S.cOut)))-vo1)*(1-Math.pow(0.05,dt));
-  viz1.style.opacity=(vo1*(mob?bandFade:1)).toFixed(3);
+  viz1.style.opacity=vo1.toFixed(3);
 
   renderer.render(scene,cam);
 }
